@@ -133,21 +133,21 @@ export default function HomePage() {
 
       {/* ── Hero ── */}
       <section className="relative flex min-h-screen min-h-[100dvh] items-center overflow-hidden">
-        <div className="absolute inset-0 bg-[#050508]"></div>
+        <div className="absolute inset-0 bg-[#0a0812]"></div>
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute inset-0 h-full w-full">
             <img
               src="/images/HeroPortfolio.jpg"
               alt=""
-              className="pointer-events-none h-full w-full select-none object-cover object-center opacity-[0.82]"
+              className="pointer-events-none h-full w-full select-none object-cover object-center opacity-100"
               loading="eager"
               decoding="async"
               fetchPriority="high"
             />
           </div>
-          <div className="absolute inset-0 bg-gradient-to-r from-[#080808] via-[#080808]/88 to-[#080808]/25"></div>
-          <div className="absolute inset-0 bg-gradient-to-t from-[#080808] via-transparent to-[#080808]/70"></div>
-          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/50"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-[#080808]/92 via-[#080808]/55 to-[#080808]/10"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-[#080808]/75 via-transparent to-[#080808]/40"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-transparent to-black/35"></div>
         </div>
         <div className="animate-hero-vignette-drift absolute top-1/3 left-1/4 w-64 sm:w-96 h-64 sm:h-96 bg-purple-600/18 rounded-full blur-[120px] pointer-events-none"></div>
         <div className="animate-hero-vignette-drift absolute bottom-1/4 right-1/4 w-48 sm:w-64 h-48 sm:h-64 bg-violet-500/12 rounded-full blur-[100px] pointer-events-none [animation-delay:-4s]"></div>
