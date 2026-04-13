@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+
+# Build output (see vite.config.ts outDir)
+out/
+dist/
+
+# Environment & secrets (keep .env.example committed if you use one)
+.env
+.env.local
+.env.*.local
+.env.production.local
+.env.development.local
+
+# Logs & debug
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Test / coverage
+coverage/
+.nyc_output/
+
+# Vite / tooling caches
+.vite/
+*.tsbuildinfo
+
+# Editor & OS
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Optional: local VS Code personal settings (uncomment if you don’t want them in git)
+# .vscode/settings.json
