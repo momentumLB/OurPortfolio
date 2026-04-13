@@ -113,6 +113,35 @@ body {
 
 .observe-animation {
   opacity: 0;
+  transform: translateX(44px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .observe-animation {
+    transform: none;
+  }
+}
+
+.animate-scroll-from-right {
+  animation: scroll-reveal-rtl 0.78s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes scroll-reveal-rtl {
+  from {
+    opacity: 0;
+    transform: translateX(44px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-scroll-from-right {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
 
 .gradient-text {

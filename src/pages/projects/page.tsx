@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { projects } from '../../mocks/projects';
 import { useEffect, useRef, useState } from 'react';
+import { MAILTO_URL, WHATSAPP_URL } from '../../constants/contact';
 
 export default function ProjectsPage() {
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -237,7 +238,7 @@ export default function ProjectsPage() {
           <p className="text-base sm:text-lg text-white/45 mb-8 sm:mb-10">Let's build a website or grow your brand on social media.</p>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
             <a
-              href="https://wa.me/1234567890"
+              href={WHATSAPP_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="px-6 sm:px-8 py-3.5 sm:py-4 bg-[#25D366] hover:bg-[#1ebe5d] text-white font-semibold rounded-full transition-all hover:scale-105 hover:shadow-xl hover:shadow-green-500/25 flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer"
@@ -246,7 +247,7 @@ export default function ProjectsPage() {
               Contact on WhatsApp
             </a>
             <a
-              href="mailto:hello@momentumlb.com"
+              href={MAILTO_URL}
               className="px-6 sm:px-8 py-3.5 sm:py-4 bg-white/5 hover:bg-white/10 text-white font-semibold rounded-full border border-white/15 hover:border-white/30 transition-all hover:scale-105 flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer"
             >
               <i className="ri-mail-line text-xl"></i>

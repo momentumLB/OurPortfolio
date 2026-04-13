@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
+import { EMAIL, INSTAGRAM_URL, MAILTO_URL, PHONE_DISPLAY, WHATSAPP_URL } from '../../constants/contact';
 
 export default function MarketingPage() {
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -323,11 +324,11 @@ export default function MarketingPage() {
               Let's build a powerful social media strategy that attracts customers, builds community, and drives real business growth.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
-              <a href="https://wa.me/1234567890" target="_blank" rel="noopener noreferrer" className="px-6 sm:px-8 py-3.5 sm:py-4 bg-[#25D366] hover:bg-[#1ebe5d] text-white font-semibold rounded-full transition-all hover:scale-105 hover:shadow-xl hover:shadow-green-500/25 flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer">
+              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="px-6 sm:px-8 py-3.5 sm:py-4 bg-[#25D366] hover:bg-[#1ebe5d] text-white font-semibold rounded-full transition-all hover:scale-105 hover:shadow-xl hover:shadow-green-500/25 flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer">
                 <i className="ri-whatsapp-line text-xl"></i>
                 Contact on WhatsApp
               </a>
-              <a href="mailto:hello@momentumlb.com" className="px-6 sm:px-8 py-3.5 sm:py-4 bg-white/5 hover:bg-white/10 text-white font-semibold rounded-full border border-white/15 hover:border-white/30 transition-all hover:scale-105 flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer">
+              <a href={MAILTO_URL} className="px-6 sm:px-8 py-3.5 sm:py-4 bg-white/5 hover:bg-white/10 text-white font-semibold rounded-full border border-white/15 hover:border-white/30 transition-all hover:scale-105 flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer">
                 <i className="ri-mail-line text-xl"></i>
                 Send Email
               </a>
@@ -347,11 +348,9 @@ export default function MarketingPage() {
               </div>
               <p className="text-sm text-white/35 mb-5 sm:mb-6 leading-relaxed">Building modern websites and growing brands for local businesses across Lebanon.</p>
               <div className="flex gap-3">
-                {[{ icon: 'ri-instagram-line', href: 'https://instagram.com' }, { icon: 'ri-linkedin-line', href: 'https://linkedin.com' }, { icon: 'ri-twitter-x-line', href: 'https://twitter.com' }].map(({ icon, href }) => (
-                  <a key={icon} href={href} target="_blank" rel="noopener noreferrer" className="w-9 h-9 flex items-center justify-center bg-white/5 hover:bg-fuchsia-500/20 border border-white/8 hover:border-fuchsia-500/40 rounded-xl transition-all cursor-pointer">
-                    <i className={`${icon} text-sm text-white/50 hover:text-fuchsia-400`}></i>
-                  </a>
-                ))}
+                <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="w-9 h-9 flex items-center justify-center bg-white/5 hover:bg-fuchsia-500/20 border border-white/8 hover:border-fuchsia-500/40 rounded-xl transition-all cursor-pointer" aria-label="Instagram">
+                  <i className="ri-instagram-line text-sm text-white/50 hover:text-fuchsia-400"></i>
+                </a>
               </div>
             </div>
             <div>
@@ -366,8 +365,18 @@ export default function MarketingPage() {
             <div>
               <h3 className="text-sm font-semibold text-white mb-4 sm:mb-5">Contact</h3>
               <ul className="space-y-2.5 sm:space-y-3">
-                <li className="flex items-center gap-2.5 text-sm text-white/35"><i className="ri-mail-line text-fuchsia-400 flex-shrink-0"></i>hello@momentumlb.com</li>
-                <li className="flex items-center gap-2.5 text-sm text-white/35"><i className="ri-phone-line text-fuchsia-400 flex-shrink-0"></i>+961 123 456 789</li>
+                <li>
+                  <a href={MAILTO_URL} className="flex items-center gap-2.5 text-sm text-white/35 hover:text-white transition-colors">
+                    <i className="ri-mail-line text-fuchsia-400 flex-shrink-0"></i>
+                    {EMAIL}
+                  </a>
+                </li>
+                <li>
+                  <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 text-sm text-white/35 hover:text-white transition-colors">
+                    <i className="ri-whatsapp-line text-fuchsia-400 flex-shrink-0"></i>
+                    {PHONE_DISPLAY}
+                  </a>
+                </li>
                 <li className="flex items-center gap-2.5 text-sm text-white/35"><i className="ri-map-pin-line text-fuchsia-400 flex-shrink-0"></i>Beirut, Lebanon</li>
               </ul>
             </div>

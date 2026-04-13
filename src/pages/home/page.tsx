@@ -1,16 +1,33 @@
 import { Link } from 'react-router-dom';
 import { projects } from '../../mocks/projects';
 import { useEffect, useRef, useState } from 'react';
+import { EMAIL, INSTAGRAM_URL, MAILTO_URL, PHONE_DISPLAY, WHATSAPP_URL } from '../../constants/contact';
+import { HeroStatCounters } from '../../components/HeroStatCounters';
 
 export default function HomePage() {
   const observerRef = useRef<IntersectionObserver | null>(null);
+  const scrollRaf = useRef<number>(0);
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 40);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    const handleScroll = () => {
+      cancelAnimationFrame(scrollRaf.current);
+      scrollRaf.current = requestAnimationFrame(() => {
+        const y = window.scrollY;
+        const doc = document.documentElement;
+        const maxScroll = Math.max(1, doc.scrollHeight - window.innerHeight);
+        setScrollProgress(Math.min(1, y / maxScroll));
+        setScrolled(y > 40);
+      });
+    };
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      cancelAnimationFrame(scrollRaf.current);
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, []);
 
   useEffect(() => {
@@ -18,11 +35,11 @@ export default function HomePage() {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            entry.target.classList.add('animate-fade-in-up');
+            entry.target.classList.add('animate-scroll-from-right');
           }
         });
       },
-      { threshold: 0.1 }
+      { threshold: 0.08, rootMargin: '0px 0px -10% 0px' }
     );
     const elements = document.querySelectorAll('.observe-animation');
     elements.forEach((el) => observerRef.current?.observe(el));
@@ -36,10 +53,18 @@ export default function HomePage() {
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? 'bg-black/90 backdrop-blur-xl border-b border-white/5 shadow-lg shadow-black/40' : 'bg-transparent'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-16">
           <div className="flex items-center justify-between h-16 sm:h-20">
-            <Link to="/" className="flex items-center gap-2.5 group">
+            <Link
+              to="/"
+              className="flex items-center gap-2.5 group"
+              onClick={(e) => {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              aria-label="Scroll to top"
+            >
               <img
                 src="/images/momentumLOGO.jpeg"
-                alt="MomentumLB Logo"
+                alt=""
                 className="w-8 h-8 sm:w-10 sm:h-10 object-contain rounded-lg"
               />
               <span className="text-base sm:text-lg font-bold tracking-tight text-white group-hover:text-purple-400 transition-colors">MomentumLB</span>
@@ -79,20 +104,53 @@ export default function HomePage() {
         )}
       </nav>
 
-      {/* ── Hero ── */}
-      <section className="relative min-h-screen flex items-center overflow-hidden">
-        <div className="absolute inset-0 bg-[#080808]"></div>
-        <div className="absolute inset-0">
-          <img
-            src="https://readdy.ai/api/search-image?query=abstract%20dark%20luxury%20digital%20technology%20background%20with%20deep%20purple%20violet%20glowing%20orbs%20bokeh%20light%20particles%20on%20black%20background%2C%20cinematic%20moody%20atmosphere%2C%20ultra%20high%20quality%2C%20no%20text%2C%20minimal&width=1920&height=1080&seq=hero-bg-momentum&orientation=landscape"
-            alt=""
-            className="w-full h-full object-cover object-center opacity-30"
+      {/* Scroll-synced neon center line (behind main content) */}
+      <div
+        className="pointer-events-none fixed inset-0 hidden sm:flex justify-center motion-reduce:hidden"
+        aria-hidden
+      >
+        <div className="relative h-full w-0 shrink-0">
+          {/* Base rail */}
+          <div
+            className="absolute left-1/2 top-0 bottom-0 w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-purple-500/35 to-transparent"
+            style={{
+              boxShadow:
+                '0 0 12px rgba(168, 85, 247, 0.35), 0 0 28px rgba(124, 58, 237, 0.2)',
+            }}
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#080808] via-[#080808]/80 to-transparent"></div>
-          <div className="absolute inset-0 bg-gradient-to-t from-[#080808] via-transparent to-[#080808]/60"></div>
+          {/* Bright segment that travels with scroll (28% tall, moves 0%→72% top) */}
+          <div
+            className="neon-scroll-segment absolute left-1/2 w-[3px] -translate-x-1/2 rounded-full bg-gradient-to-b from-fuchsia-400 via-purple-400 to-violet-500 will-change-[top]"
+            style={{
+              height: '28%',
+              top: `${scrollProgress * 72}%`,
+              boxShadow:
+                '0 0 14px rgba(192, 132, 252, 0.65), 0 0 32px rgba(139, 92, 246, 0.35)',
+            }}
+          />
         </div>
-        <div className="absolute top-1/3 left-1/4 w-64 sm:w-96 h-64 sm:h-96 bg-purple-600/20 rounded-full blur-[120px] pointer-events-none"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-48 sm:w-64 h-48 sm:h-64 bg-violet-500/15 rounded-full blur-[100px] pointer-events-none"></div>
+      </div>
+
+      {/* ── Hero ── */}
+      <section className="relative flex min-h-screen min-h-[100dvh] items-center overflow-hidden">
+        <div className="absolute inset-0 bg-[#050508]"></div>
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute inset-0 h-full w-full">
+            <img
+              src="/images/HeroPortfolio.jpg"
+              alt=""
+              className="pointer-events-none h-full w-full select-none object-cover object-center opacity-[0.82]"
+              loading="eager"
+              decoding="async"
+              fetchPriority="high"
+            />
+          </div>
+          <div className="absolute inset-0 bg-gradient-to-r from-[#080808] via-[#080808]/88 to-[#080808]/25"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-[#080808] via-transparent to-[#080808]/70"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/50"></div>
+        </div>
+        <div className="animate-hero-vignette-drift absolute top-1/3 left-1/4 w-64 sm:w-96 h-64 sm:h-96 bg-purple-600/18 rounded-full blur-[120px] pointer-events-none"></div>
+        <div className="animate-hero-vignette-drift absolute bottom-1/4 right-1/4 w-48 sm:w-64 h-48 sm:h-64 bg-violet-500/12 rounded-full blur-[100px] pointer-events-none [animation-delay:-4s]"></div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-16 pt-24 sm:pt-32 pb-16 sm:pb-20 w-full">
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
@@ -115,15 +173,7 @@ export default function HomePage() {
                   Contact Us
                 </a>
               </div>
-              {/* Stats */}
-              <div className="flex justify-center lg:justify-start gap-8 sm:gap-10 mt-10 sm:mt-14 animate-slide-left" style={{ animationDelay: '0.4s' }}>
-                {[['4+', 'Projects Delivered'], ['100%', 'Client Satisfaction'], ['12+', 'Brands Grown']].map(([num, label]) => (
-                  <div key={label} className="flex flex-col items-center lg:items-start">
-                    <div className="text-xl sm:text-2xl font-extrabold text-white">{num}</div>
-                    <div className="text-[10px] sm:text-xs text-white/40 mt-0.5 leading-tight text-center lg:text-left">{label}</div>
-                  </div>
-                ))}
-              </div>
+              <HeroStatCounters />
             </div>
 
             {/* Right – laptop mockup (desktop only) */}
@@ -171,9 +221,9 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-40 hidden md:flex">
-          <span className="text-xs tracking-widest uppercase text-white/50">Scroll</span>
-          <div className="w-px h-10 bg-gradient-to-b from-white/40 to-transparent"></div>
+        <div className="animate-hero-scroll-hint absolute bottom-8 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-2 hidden md:flex">
+          <span className="text-xs tracking-widest uppercase text-white/55">Scroll</span>
+          <div className="w-px h-10 bg-gradient-to-b from-white/50 to-transparent rounded-full"></div>
         </div>
       </section>
 
@@ -460,11 +510,11 @@ export default function HomePage() {
               Whether you need a website, social media growth, or both — we're here to help your business succeed online.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
-              <a href="https://wa.me/1234567890" target="_blank" rel="noopener noreferrer" className="px-6 sm:px-8 py-3.5 sm:py-4 bg-[#25D366] hover:bg-[#1ebe5d] text-white font-semibold rounded-full transition-all hover:scale-105 hover:shadow-xl hover:shadow-green-500/25 flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer">
+              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="px-6 sm:px-8 py-3.5 sm:py-4 bg-[#25D366] hover:bg-[#1ebe5d] text-white font-semibold rounded-full transition-all hover:scale-105 hover:shadow-xl hover:shadow-green-500/25 flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer">
                 <i className="ri-whatsapp-line text-xl"></i>
                 Contact on WhatsApp
               </a>
-              <a href="mailto:hello@momentumlb.com" className="px-6 sm:px-8 py-3.5 sm:py-4 bg-white/5 hover:bg-white/10 text-white font-semibold rounded-full border border-white/15 hover:border-white/30 transition-all hover:scale-105 flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer">
+              <a href={MAILTO_URL} className="px-6 sm:px-8 py-3.5 sm:py-4 bg-white/5 hover:bg-white/10 text-white font-semibold rounded-full border border-white/15 hover:border-white/30 transition-all hover:scale-105 flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer">
                 <i className="ri-mail-line text-xl"></i>
                 Send Email
               </a>
@@ -484,11 +534,9 @@ export default function HomePage() {
               </div>
               <p className="text-sm text-white/35 mb-5 sm:mb-6 leading-relaxed">Building modern websites and growing brands for local businesses across Lebanon.</p>
               <div className="flex gap-3">
-                {[{ icon: 'ri-instagram-line', href: 'https://instagram.com' }, { icon: 'ri-linkedin-line', href: 'https://linkedin.com' }, { icon: 'ri-twitter-x-line', href: 'https://twitter.com' }].map(({ icon, href }) => (
-                  <a key={icon} href={href} target="_blank" rel="noopener noreferrer" className="w-9 h-9 flex items-center justify-center bg-white/5 hover:bg-purple-500/20 border border-white/8 hover:border-purple-500/40 rounded-xl transition-all cursor-pointer">
-                    <i className={`${icon} text-sm text-white/50 hover:text-purple-400`}></i>
-                  </a>
-                ))}
+                <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="w-9 h-9 flex items-center justify-center bg-white/5 hover:bg-purple-500/20 border border-white/8 hover:border-purple-500/40 rounded-xl transition-all cursor-pointer" aria-label="Instagram">
+                  <i className="ri-instagram-line text-sm text-white/50 hover:text-purple-400"></i>
+                </a>
               </div>
             </div>
             <div>
@@ -503,8 +551,18 @@ export default function HomePage() {
             <div>
               <h3 className="text-sm font-semibold text-white mb-4 sm:mb-5">Contact</h3>
               <ul className="space-y-2.5 sm:space-y-3">
-                <li className="flex items-center gap-2.5 text-sm text-white/35"><i className="ri-mail-line text-purple-400 flex-shrink-0"></i>hello@momentumlb.com</li>
-                <li className="flex items-center gap-2.5 text-sm text-white/35"><i className="ri-phone-line text-purple-400 flex-shrink-0"></i>+961 123 456 789</li>
+                <li>
+                  <a href={MAILTO_URL} className="flex items-center gap-2.5 text-sm text-white/35 hover:text-white transition-colors">
+                    <i className="ri-mail-line text-purple-400 flex-shrink-0"></i>
+                    {EMAIL}
+                  </a>
+                </li>
+                <li>
+                  <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 text-sm text-white/35 hover:text-white transition-colors">
+                    <i className="ri-whatsapp-line text-purple-400 flex-shrink-0"></i>
+                    {PHONE_DISPLAY}
+                  </a>
+                </li>
                 <li className="flex items-center gap-2.5 text-sm text-white/35"><i className="ri-map-pin-line text-purple-400 flex-shrink-0"></i>Beirut, Lebanon</li>
               </ul>
             </div>
