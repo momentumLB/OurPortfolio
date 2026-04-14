@@ -1,8 +1,14 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import { EMAIL, INSTAGRAM_URL, MAILTO_URL, PHONE_DISPLAY, WHATSAPP_URL } from '../../constants/contact';
+import { useMeta } from '../../hooks/useMeta';
 
 export default function MarketingPage() {
+  useMeta({
+    title: 'Social Media Marketing Services in Lebanon | MomentumLB',
+    description: 'MomentumLB manages Instagram, Facebook, and TikTok for local businesses in Lebanon — content creation, paid ads, and brand growth strategies that get real results.',
+    canonical: 'https://momentumlb.com/marketing',
+  });
   const observerRef = useRef<IntersectionObserver | null>(null);
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -36,7 +42,7 @@ export default function MarketingPage() {
           <div className="flex items-center justify-between h-16 sm:h-20">
             <Link to="/" className="flex items-center gap-2.5 group">
               <img
-                src="https://static.readdy.ai/image/32fd8ec477f30c9eeb092abdaae5bf30/22ebaf027c8e6463c01cf57854605d6c.jpeg"
+                src="/images/momentumLOGO.jpeg"
                 alt="MomentumLB Logo"
                 className="w-8 h-8 sm:w-10 sm:h-10 object-contain rounded-lg"
               />
@@ -343,7 +349,7 @@ export default function MarketingPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 sm:gap-12 mb-10 sm:mb-12">
             <div>
               <div className="flex items-center gap-3 mb-4">
-                <img src="https://static.readdy.ai/image/32fd8ec477f30c9eeb092abdaae5bf30/22ebaf027c8e6463c01cf57854605d6c.jpeg" alt="MomentumLB Logo" className="w-9 h-9 object-contain rounded-lg" />
+                <img src="/images/momentumLOGO.jpeg" alt="MomentumLB Logo" className="w-9 h-9 object-contain rounded-lg" />
                 <span className="text-base font-bold text-white">MomentumLB</span>
               </div>
               <p className="text-sm text-white/35 mb-5 sm:mb-6 leading-relaxed">Building modern websites and growing brands for local businesses across Lebanon.</p>

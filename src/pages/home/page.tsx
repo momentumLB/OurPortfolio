@@ -3,8 +3,14 @@ import { projects } from '../../mocks/projects';
 import { useEffect, useRef, useState } from 'react';
 import { EMAIL, INSTAGRAM_URL, MAILTO_URL, PHONE_DISPLAY, WHATSAPP_URL } from '../../constants/contact';
 import { HeroStatCounters } from '../../components/HeroStatCounters';
+import { useMeta } from '../../hooks/useMeta';
 
 export default function HomePage() {
+  useMeta({
+    title: 'MomentumLB – Web Development & Marketing Agency in Lebanon',
+    description: 'MomentumLB builds fast, modern websites and runs social media marketing for restaurants, clinics, gyms, and local businesses in Lebanon. Real results, real growth.',
+    canonical: 'https://momentumlb.com/',
+  });
   const observerRef = useRef<IntersectionObserver | null>(null);
   const scrollRaf = useRef<number>(0);
   const [scrolled, setScrolled] = useState(false);
@@ -138,7 +144,7 @@ export default function HomePage() {
           <div className="absolute inset-0 h-full w-full">
             <img
               src="/images/HeroPortfolio.jpg"
-              alt=""
+              alt="MomentumLB – Web development and marketing agency based in Lebanon"
               className="pointer-events-none h-full w-full select-none object-cover object-center opacity-100"
               loading="eager"
               decoding="async"
@@ -529,7 +535,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 sm:gap-12 mb-10 sm:mb-12">
             <div>
               <div className="flex items-center gap-3 mb-4">
-                <img src="https://static.readdy.ai/image/32fd8ec477f30c9eeb092abdaae5bf30/22ebaf027c8e6463c01cf57854605d6c.jpeg" alt="MomentumLB Logo" className="w-9 h-9 object-contain rounded-lg" />
+                <img src="/images/momentumLOGO.jpeg" alt="MomentumLB Logo" className="w-9 h-9 object-contain rounded-lg" />
                 <span className="text-base font-bold text-white">MomentumLB</span>
               </div>
               <p className="text-sm text-white/35 mb-5 sm:mb-6 leading-relaxed">Building modern websites and growing brands for local businesses across Lebanon.</p>

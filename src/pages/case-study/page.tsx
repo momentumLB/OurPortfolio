@@ -2,10 +2,24 @@ import { Link, useParams } from 'react-router-dom';
 import { projects } from '../../mocks/projects';
 import { useEffect, useRef, useState } from 'react';
 import { MAILTO_URL, WHATSAPP_URL } from '../../constants/contact';
+import { useMeta } from '../../hooks/useMeta';
 
 export default function CaseStudyPage() {
   const { id } = useParams<{ id: string }>();
   const project = projects.find((p) => p.id === id);
+
+  useMeta({
+    title: project
+      ? `${project.name} – Case Study | MomentumLB`
+      : 'Case Study | MomentumLB',
+    description: project
+      ? `See how MomentumLB helped ${project.name} (${project.industry}) grow online in Lebanon. Before: ${project.before} After: ${project.after}`
+      : 'Explore how MomentumLB helps local businesses in Lebanon grow online.',
+    canonical: `https://momentumlb.com/case-study/${id ?? ''}`,
+    ogImage: project?.website?.screenshot
+      ? `https://momentumlb.com${project.website.screenshot}`
+      : undefined,
+  });
   const observerRef = useRef<IntersectionObserver | null>(null);
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);

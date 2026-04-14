@@ -1,0 +1,21 @@
+User-agent: *
+Allow: /
+
+# Block common non-content paths
+Disallow: /src/
+Disallow: /node_modules/
+
+# AI crawlers – allowed for brand discovery
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Googlebot
+Allow: /
+
+Sitemap: https://momentumlb.com/sitemap.xml

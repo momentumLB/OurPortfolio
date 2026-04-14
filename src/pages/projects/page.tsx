@@ -2,8 +2,14 @@ import { Link } from 'react-router-dom';
 import { projects } from '../../mocks/projects';
 import { useEffect, useRef, useState } from 'react';
 import { MAILTO_URL, WHATSAPP_URL } from '../../constants/contact';
+import { useMeta } from '../../hooks/useMeta';
 
 export default function ProjectsPage() {
+  useMeta({
+    title: 'Our Projects – Websites & Marketing Campaigns | MomentumLB',
+    description: 'Browse real websites and marketing campaigns built by MomentumLB for restaurants, beauty clinics, gyms, and local businesses across Lebanon.',
+    canonical: 'https://momentumlb.com/projects',
+  });
   const observerRef = useRef<IntersectionObserver | null>(null);
   const [scrolled, setScrolled] = useState(false);
   const [activeFilter, setActiveFilter] = useState<'all' | 'website' | 'marketing'>('all');
@@ -44,7 +50,7 @@ export default function ProjectsPage() {
           <div className="flex items-center justify-between h-16 sm:h-20">
             <Link to="/" className="flex items-center gap-2.5 group">
               <img
-                src="https://static.readdy.ai/image/32fd8ec477f30c9eeb092abdaae5bf30/22ebaf027c8e6463c01cf57854605d6c.jpeg"
+                src="/images/momentumLOGO.jpeg"
                 alt="MomentumLB"
                 className="w-8 h-8 sm:w-10 sm:h-10 object-contain rounded-lg"
               />
@@ -262,7 +268,7 @@ export default function ProjectsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-16">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
-              <img src="https://static.readdy.ai/image/32fd8ec477f30c9eeb092abdaae5bf30/22ebaf027c8e6463c01cf57854605d6c.jpeg" alt="MomentumLB" className="w-8 h-8 object-contain rounded-lg" />
+              <img src="/images/momentumLOGO.jpeg" alt="MomentumLB" className="w-8 h-8 object-contain rounded-lg" />
               <span className="text-sm font-bold text-white">MomentumLB</span>
             </div>
             <div className="flex flex-wrap items-center gap-4 sm:gap-6">
