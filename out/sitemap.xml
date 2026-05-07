@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+
+  <!-- Homepage -->
+  <url>
+    <loc>https://momentumlb.com/</loc>
+    <lastmod>2025-04-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://momentumlb.com/images/HeroPortfolio.jpg</image:loc>
+      <image:title>MomentumLB – Web Development and Marketing Agency Lebanon</image:title>
+    </image:image>
+  </url>
+
+  <!-- Projects page -->
+  <url>
+    <loc>https://momentumlb.com/projects</loc>
+    <lastmod>2025-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Marketing page -->
+  <url>
+    <loc>https://momentumlb.com/marketing</loc>
+    <lastmod>2025-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Case Studies -->
+  <url>
+    <loc>https://momentumlb.com/case-study/annas-care</loc>
+    <lastmod>2025-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://momentumlb.com/images/AnnascarelbPortfolio.PNG</image:loc>
+      <image:title>Anna's Care Beauty Clinic – Case Study</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://momentumlb.com/case-study/hub-30</loc>
+    <lastmod>2025-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://momentumlb.com/images/Hub30Portfolio.PNG</image:loc>
+      <image:title>Hub30 Gym – Case Study</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://momentumlb.com/case-study/road-443</loc>
+    <lastmod>2025-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://momentumlb.com/images/RoadPortfolio.PNG</image:loc>
+      <image:title>Road443 Restaurant – Case Study</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://momentumlb.com/case-study/maria-beauty-salon</loc>
+    <lastmod>2025-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://momentumlb.com/images/MariaBeautySalonPortfolio.PNG</image:loc>
+      <image:title>Maria Beauty Salon – Case Study</image:title>
+    </image:image>
+  </url>
+
+</urlset>

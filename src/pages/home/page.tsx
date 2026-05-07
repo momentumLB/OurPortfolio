@@ -1,220 +1,468 @@
 import { Link } from 'react-router-dom';
 import { projects } from '../../mocks/projects';
-import { useEffect, useRef, useState } from 'react';
-import { EMAIL, INSTAGRAM_URL, MAILTO_URL, PHONE_DISPLAY, WHATSAPP_URL } from '../../constants/contact';
+import { useEffect, useState } from 'react';
+import {
+  motion,
+  useScroll,
+  useTransform,
+  useMotionValue,
+  useSpring,
+} from 'framer-motion';
+import {
+  EMAIL,
+  INSTAGRAM_URL,
+  MAILTO_URL,
+  PHONE_DISPLAY,
+  WHATSAPP_URL,
+} from '../../constants/contact';
 import { HeroStatCounters } from '../../components/HeroStatCounters';
 import { useMeta } from '../../hooks/useMeta';
+
+// ─── Shared animation variants ─────────────────────────────────────────────
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 48 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.75, ease: [0.22, 1, 0.36, 1] as const },
+  },
+};
+
+const fadeLeft = {
+  hidden: { opacity: 0, x: -40 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] as const },
+  },
+};
+
+const scaleIn = {
+  hidden: { opacity: 0, scale: 0.93, y: 28 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: { duration: 0.65, ease: [0.22, 1, 0.36, 1] as const },
+  },
+};
+
+const stagger = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.1, delayChildren: 0.05 } },
+};
+
+const VP = { once: true, margin: '-80px' } as const;
+
+// ─── Cursor glow ────────────────────────────────────────────────────────────
+
+function CursorGlow() {
+  const mx = useMotionValue(-500);
+  const my = useMotionValue(-500);
+  const sx = useSpring(mx, { stiffness: 55, damping: 22 });
+  const sy = useSpring(my, { stiffness: 55, damping: 22 });
+
+  useEffect(() => {
+    const move = (e: MouseEvent) => { mx.set(e.clientX); my.set(e.clientY); };
+    window.addEventListener('mousemove', move);
+    return () => window.removeEventListener('mousemove', move);
+  }, [mx, my]);
+
+  return (
+    <motion.div
+      aria-hidden
+      className="pointer-events-none fixed z-[990] hidden lg:block"
+      style={{
+        x: sx,
+        y: sy,
+        translateX: '-50%',
+        translateY: '-50%',
+        width: 560,
+        height: 560,
+        background:
+          'radial-gradient(circle, rgba(124,58,237,0.09) 0%, rgba(124,58,237,0.03) 45%, transparent 70%)',
+        borderRadius: '50%',
+      }}
+    />
+  );
+}
+
+// ─── Main component ─────────────────────────────────────────────────────────
 
 export default function HomePage() {
   useMeta({
     title: 'MomentumLB – Web Development & Marketing Agency in Lebanon',
-    description: 'MomentumLB builds fast, modern websites and runs social media marketing for restaurants, clinics, gyms, and local businesses in Lebanon. Real results, real growth.',
+    description:
+      'MomentumLB builds fast, modern websites and runs social media marketing for restaurants, clinics, gyms, and local businesses in Lebanon. Real results, real growth.',
     canonical: 'https://momentumlb.com/',
   });
-  const observerRef = useRef<IntersectionObserver | null>(null);
-  const scrollRaf = useRef<number>(0);
+
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [scrollProgress, setScrollProgress] = useState(0);
+
+  const { scrollYProgress, scrollY } = useScroll();
+  const heroBgY = useTransform(scrollY, [0, 700], [0, 140]);
 
   useEffect(() => {
-    const handleScroll = () => {
-      cancelAnimationFrame(scrollRaf.current);
-      scrollRaf.current = requestAnimationFrame(() => {
-        const y = window.scrollY;
-        const doc = document.documentElement;
-        const maxScroll = Math.max(1, doc.scrollHeight - window.innerHeight);
-        setScrollProgress(Math.min(1, y / maxScroll));
-        setScrolled(y > 40);
-      });
-    };
-    handleScroll();
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => {
-      cancelAnimationFrame(scrollRaf.current);
-      window.removeEventListener('scroll', handleScroll);
-    };
+    const handler = () => setScrolled(window.scrollY > 50);
+    window.addEventListener('scroll', handler, { passive: true });
+    handler();
+    return () => window.removeEventListener('scroll', handler);
   }, []);
 
-  useEffect(() => {
-    observerRef.current = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('animate-scroll-from-right');
-          }
-        });
-      },
-      { threshold: 0.08, rootMargin: '0px 0px -10% 0px' }
-    );
-    const elements = document.querySelectorAll('.observe-animation');
-    elements.forEach((el) => observerRef.current?.observe(el));
-    return () => observerRef.current?.disconnect();
-  }, []);
+  const industries = [
+    { icon: 'ri-windy-line',          label: 'HVAC' },
+    { icon: 'ri-drop-line',           label: 'Perfume Stores' },
+    { icon: 'ri-shopping-bag-3-line', label: 'E‑Commerce' },
+    { icon: 'ri-restaurant-line',     label: 'Restaurants' },
+    { icon: 'ri-cup-line',            label: 'Cafés' },
+    { icon: 'ri-heart-pulse-line',    label: 'Beauty Clinics' },
+    { icon: 'ri-run-line',            label: 'Gyms' },
+    { icon: 'ri-store-3-line',        label: 'Retail Brands' },
+  ];
+
+  const websiteProjects = projects.filter((p) => p.website);
+
+  const services = [
+    {
+      num: '01',
+      icon: 'ri-store-3-line',
+      title: 'Business Websites',
+      desc: 'Modern, fast websites for restaurants, gyms, clinics and all local businesses — built to impress and convert.',
+      color: 'purple' as const,
+    },
+    {
+      num: '02',
+      icon: 'ri-restaurant-line',
+      title: 'Restaurant Menu Sites',
+      desc: 'Beautiful digital menus optimized for mobile ordering, with WhatsApp integration and delivery info.',
+      color: 'fuchsia' as const,
+    },
+    {
+      num: '03',
+      icon: 'ri-rocket-2-line',
+      title: 'Landing Pages',
+      desc: 'High-converting landing pages for promotions, services, and campaigns — designed to drive action.',
+      color: 'violet' as const,
+    },
+  ];
+
+  const marketingServices = [
+    { icon: 'ri-instagram-line',    title: 'Social Media Management',  desc: 'Daily posting, engagement, and growth strategies across Instagram, Facebook, and TikTok.' },
+    { icon: 'ri-palette-line',      title: 'Content Creation',          desc: 'Photos, videos, graphics and captions that capture attention and drive real engagement.' },
+    { icon: 'ri-advertisement-line',title: 'Paid Ads (Meta / Google)',  desc: 'Targeted campaigns on Facebook, Instagram, and Google to reach your ideal customers.' },
+    { icon: 'ri-line-chart-line',   title: 'Brand Growth Strategy',    desc: 'Data-driven strategies to grow followers, engagement, and conversions for your business.' },
+  ];
+
+  const colorMap = {
+    purple: {
+      numText: 'text-purple-600/35 group-hover:text-purple-500/55',
+      iconBg: 'bg-purple-500/15 border-purple-500/20',
+      iconText: 'text-purple-400',
+    },
+    fuchsia: {
+      numText: 'text-fuchsia-600/35 group-hover:text-fuchsia-500/55',
+      iconBg: 'bg-fuchsia-500/15 border-fuchsia-500/20',
+      iconText: 'text-fuchsia-400',
+    },
+    violet: {
+      numText: 'text-violet-600/35 group-hover:text-violet-500/55',
+      iconBg: 'bg-violet-500/15 border-violet-500/20',
+      iconText: 'text-violet-400',
+    },
+  };
 
   return (
-    <div className="min-h-screen bg-[#080808] text-white font-sans overflow-x-hidden">
+    <div className="min-h-screen bg-[#020208] text-white overflow-x-hidden">
 
-      {/* ── Navigation ── */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? 'bg-black/90 backdrop-blur-xl border-b border-white/5 shadow-lg shadow-black/40' : 'bg-transparent'}`}>
+      <CursorGlow />
+
+      {/* ── Scroll progress bar ── */}
+      <motion.div
+        aria-hidden
+        className="fixed top-0 left-0 right-0 h-[2px] bg-gradient-to-r
+          from-purple-600 via-fuchsia-500 to-violet-600 z-[100] origin-left"
+        style={{ scaleX: scrollYProgress, transformOrigin: '0% 50%' }}
+      />
+
+      {/* ═══════════════════════════════════════════════════════
+          NAV
+      ═══════════════════════════════════════════════════════ */}
+      <motion.nav
+        initial={{ y: -80, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500
+          ${scrolled
+            ? 'bg-black/75 backdrop-blur-2xl border-b border-white/[0.06] shadow-2xl shadow-black/60'
+            : 'bg-transparent'
+          }`}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-16">
           <div className="flex items-center justify-between h-16 sm:h-20">
+
+            {/* Logo */}
             <Link
               to="/"
               className="flex items-center gap-2.5 group"
-              onClick={(e) => {
-                e.preventDefault();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
+              onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
               aria-label="Scroll to top"
             >
-              <img
-                src="/images/momentumLOGO.jpeg"
-                alt=""
-                className="w-8 h-8 sm:w-10 sm:h-10 object-contain rounded-lg"
-              />
-              <span className="text-base sm:text-lg font-bold tracking-tight text-white group-hover:text-purple-400 transition-colors">MomentumLB</span>
+              <div className="relative">
+                <div className="absolute inset-0 bg-purple-500/30 blur-md rounded-xl
+                  opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <img
+                  src="/images/momentumLOGO.jpeg"
+                  alt=""
+                  className="relative w-8 h-8 sm:w-9 sm:h-9 object-contain rounded-xl"
+                />
+              </div>
+              <span className="text-base sm:text-lg font-bold tracking-tight text-white
+                group-hover:text-purple-300 transition-colors">
+                MomentumLB
+              </span>
             </Link>
-            {/* Desktop nav */}
+
+            {/* Desktop links */}
             <div className="hidden md:flex items-center gap-8">
               {['Projects', 'Services', 'Marketing', 'Contact'].map((item) => (
-                <a key={item} href={`#${item.toLowerCase()}`} className="text-sm font-medium text-white/60 hover:text-white transition-colors cursor-pointer">
+                <a
+                  key={item}
+                  href={`#${item.toLowerCase()}`}
+                  className="relative text-sm font-medium text-white/65 hover:text-white
+                    transition-colors duration-200 group"
+                >
                   {item}
+                  <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-gradient-to-r
+                    from-purple-400 to-fuchsia-400 group-hover:w-full transition-all duration-300" />
                 </a>
               ))}
             </div>
-            <a href="#contact" className="hidden md:inline-flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white text-sm font-semibold rounded-full transition-all hover:scale-105 hover:shadow-lg hover:shadow-purple-500/30 whitespace-nowrap cursor-pointer">
-              Get Started <i className="ri-arrow-right-line"></i>
+
+            <a
+              href="#contact"
+              className="hidden md:inline-flex items-center gap-2 px-5 py-2.5
+                bg-purple-600 hover:bg-purple-500 text-white text-sm font-semibold
+                rounded-full transition-all duration-200 hover:scale-105
+                hover:shadow-lg hover:shadow-purple-500/30 whitespace-nowrap"
+            >
+              Get Started <i className="ri-arrow-right-line" />
             </a>
-            {/* Mobile hamburger */}
+
+            {/* Hamburger */}
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="md:hidden w-10 h-10 flex items-center justify-center text-white/70 hover:text-white transition-colors"
+              className="md:hidden w-10 h-10 flex items-center justify-center
+                text-white/60 hover:text-white transition-colors"
+              aria-label="Toggle menu"
             >
-              <i className={`text-xl ${menuOpen ? 'ri-close-line' : 'ri-menu-line'}`}></i>
+              <i className={`text-xl ${menuOpen ? 'ri-close-line' : 'ri-menu-line'}`} />
             </button>
           </div>
         </div>
+
         {/* Mobile menu */}
         {menuOpen && (
-          <div className="md:hidden bg-black/95 backdrop-blur-xl border-t border-white/5 px-4 py-4 flex flex-col gap-4">
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="md:hidden bg-black/95 backdrop-blur-2xl border-t border-white/[0.06]
+              px-4 py-4 flex flex-col gap-3"
+          >
             {['Projects', 'Services', 'Marketing', 'Contact'].map((item) => (
-              <a key={item} href={`#${item.toLowerCase()}`} onClick={() => setMenuOpen(false)} className="text-sm font-medium text-white/70 hover:text-white transition-colors py-2 cursor-pointer">
+              <a
+                key={item}
+                href={`#${item.toLowerCase()}`}
+                onClick={() => setMenuOpen(false)}
+                className="text-sm font-medium text-white/60 hover:text-white transition-colors py-2"
+              >
                 {item}
               </a>
             ))}
-            <a href="#contact" onClick={() => setMenuOpen(false)} className="mt-2 px-5 py-3 bg-purple-600 text-white text-sm font-semibold rounded-full text-center whitespace-nowrap cursor-pointer">
+            <a
+              href="#contact"
+              onClick={() => setMenuOpen(false)}
+              className="mt-2 px-5 py-3 bg-purple-600 text-white text-sm font-semibold
+                rounded-full text-center"
+            >
               Get Started
             </a>
-          </div>
+          </motion.div>
         )}
-      </nav>
+      </motion.nav>
 
-      {/* Scroll-synced neon center line (behind main content) */}
-      <div
-        className="pointer-events-none fixed inset-0 hidden sm:flex justify-center motion-reduce:hidden"
-        aria-hidden
-      >
-        <div className="relative h-full w-0 shrink-0">
-          {/* Base rail */}
-          <div
-            className="absolute left-1/2 top-0 bottom-0 w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-purple-500/35 to-transparent"
-            style={{
-              boxShadow:
-                '0 0 12px rgba(168, 85, 247, 0.35), 0 0 28px rgba(124, 58, 237, 0.2)',
-            }}
-          />
-          {/* Bright segment that travels with scroll (28% tall, moves 0%→72% top) */}
-          <div
-            className="neon-scroll-segment absolute left-1/2 w-[3px] -translate-x-1/2 rounded-full bg-gradient-to-b from-fuchsia-400 via-purple-400 to-violet-500 will-change-[top]"
-            style={{
-              height: '28%',
-              top: `${scrollProgress * 72}%`,
-              boxShadow:
-                '0 0 14px rgba(192, 132, 252, 0.65), 0 0 32px rgba(139, 92, 246, 0.35)',
-            }}
-          />
-        </div>
-      </div>
+      {/* ═══════════════════════════════════════════════════════
+          HERO
+      ═══════════════════════════════════════════════════════ */}
+      <section className="relative min-h-[100dvh] flex items-center overflow-hidden">
 
-      {/* ── Hero ── */}
-      <section className="relative flex min-h-screen min-h-[100dvh] items-center overflow-hidden">
-        <div className="absolute inset-0 bg-[#0a0812]"></div>
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute inset-0 h-full w-full">
-            <img
-              src="/images/HeroPortfolio.jpg"
-              alt="MomentumLB – Web development and marketing agency based in Lebanon"
-              className="pointer-events-none h-full w-full select-none object-cover object-center opacity-100"
-              loading="eager"
-              decoding="async"
-              fetchPriority="high"
+        {/* Parallax background layer */}
+        <motion.div
+          aria-hidden
+          className="absolute inset-0 pointer-events-none"
+          style={{ y: heroBgY }}
+        >
+          {/* Base */}
+          <div className="absolute inset-0 bg-[#020208]" />
+          {/* Grid overlay */}
+          <div className="absolute inset-0 bg-grid-pattern" />
+          {/* Hero video */}
+          <div className="absolute inset-0">
+            <video
+              src="/images/HeroVideo.mp4"
+              className="w-full h-full object-cover object-center opacity-[0.9]"
+              autoPlay
+              muted
+              loop
+              playsInline
             />
           </div>
-          <div className="absolute inset-0 bg-gradient-to-r from-[#080808]/92 via-[#080808]/55 to-[#080808]/10"></div>
-          <div className="absolute inset-0 bg-gradient-to-t from-[#080808]/75 via-transparent to-[#080808]/40"></div>
-          <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-transparent to-black/35"></div>
-        </div>
-        <div className="animate-hero-vignette-drift absolute top-1/3 left-1/4 w-64 sm:w-96 h-64 sm:h-96 bg-purple-600/18 rounded-full blur-[120px] pointer-events-none"></div>
-        <div className="animate-hero-vignette-drift absolute bottom-1/4 right-1/4 w-48 sm:w-64 h-48 sm:h-64 bg-violet-500/12 rounded-full blur-[100px] pointer-events-none [animation-delay:-4s]"></div>
+          {/* Gradient overlays */}
+          <div className="absolute inset-0 bg-gradient-to-r
+            from-[#020208]/96 via-[#020208]/70 to-[#020208]/25" />
+          <div className="absolute inset-0 bg-gradient-to-t
+            from-[#020208]/95 via-transparent to-[#020208]/55" />
+          {/* Aurora orbs */}
+          <div className="absolute -top-[15%] -left-[8%] w-[500px] sm:w-[750px]
+            h-[500px] sm:h-[750px] rounded-full bg-purple-600/22 blur-[170px] animate-aurora" />
+          <div className="absolute -bottom-[15%] -right-[8%] w-[400px] sm:w-[650px]
+            h-[400px] sm:h-[650px] rounded-full bg-fuchsia-500/12 blur-[150px] animate-aurora-2" />
+          <div className="absolute top-[35%] right-[18%] w-[280px] sm:w-[420px]
+            h-[280px] sm:h-[420px] rounded-full bg-violet-500/14 blur-[130px] animate-aurora-3" />
+          {/* Cyan accent */}
+          <div className="absolute top-[20%] right-[35%] w-[220px] sm:w-[340px]
+            h-[220px] sm:h-[340px] rounded-full bg-cyan-400/14 blur-[110px] animate-aurora-2" />
+        </motion.div>
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-16 pt-24 sm:pt-32 pb-16 sm:pb-20 w-full">
-          <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-            {/* Left */}
-            <div className="text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-full border border-purple-500/30 bg-purple-500/10 mb-6 sm:mb-8 animate-slide-left">
-                <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse flex-shrink-0"></span>
-                <span className="text-[10px] sm:text-xs font-semibold text-purple-300 tracking-widest uppercase">Web Development & Marketing · Lebanon</span>
-              </div>
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-extrabold leading-[1.1] mb-8 sm:mb-10 animate-slide-left" style={{ animationDelay: '0.1s' }}>
-                Websites & Marketing<br />
+        {/* Content */}
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-16
+          pt-28 sm:pt-36 pb-20 sm:pb-24 w-full">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+
+            {/* ── Left col ── */}
+            <motion.div
+              className="text-center lg:text-left"
+              variants={stagger}
+              initial="hidden"
+              animate="visible"
+            >
+              {/* Badge */}
+              <motion.div
+                variants={fadeUp}
+                className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full
+                  border border-violet-400/40 bg-violet-500/[0.12] mb-7 sm:mb-9"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse flex-shrink-0" />
+                <span className="text-[10px] sm:text-xs font-semibold text-violet-200
+                  tracking-[0.2em] uppercase">
+                  Web Development & Marketing · Lebanon
+                </span>
+              </motion.div>
+
+              {/* H1 */}
+              <motion.h1
+                variants={fadeUp}
+                className="font-display text-[2.6rem] sm:text-5xl lg:text-6xl xl:text-[4.25rem]
+                  font-extrabold leading-[1.05] tracking-tight mb-9 sm:mb-11"
+              >
+                Websites &amp; Marketing<br />
                 <span className="gradient-text">That Drive Growth</span><br />
-                for Local Businesses
-              </h1>
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start animate-slide-left" style={{ animationDelay: '0.3s' }}>
-                <a href="#what-we-do" className="px-6 sm:px-8 py-3 sm:py-4 bg-purple-600 hover:bg-purple-500 text-white font-semibold rounded-full transition-all hover:scale-105 hover:shadow-xl hover:shadow-purple-500/30 whitespace-nowrap cursor-pointer text-sm sm:text-base">
-                  Explore Services
+                <span className="text-white/80">for Local Businesses</span>
+              </motion.h1>
+
+              {/* CTAs */}
+              <motion.div
+                variants={fadeUp}
+                className="flex flex-col sm:flex-row gap-3 sm:gap-4
+                  justify-center lg:justify-start"
+              >
+                <a
+                  href="#what-we-do"
+                  className="group relative overflow-hidden px-7 sm:px-8 py-3.5 sm:py-4
+                    bg-gradient-to-r from-violet-600 to-fuchsia-600
+                    hover:from-violet-500 hover:to-fuchsia-500
+                    text-white font-semibold rounded-full
+                    transition-all duration-200 hover:scale-105 hover:shadow-xl
+                    hover:shadow-violet-500/35 text-sm sm:text-base"
+                >
+                  <span className="relative z-10 flex items-center justify-center gap-2">
+                    Explore Services
+                    <i className="ri-arrow-right-line group-hover:translate-x-1 transition-transform duration-200" />
+                  </span>
                 </a>
-                <a href="#contact" className="px-6 sm:px-8 py-3 sm:py-4 bg-white/5 hover:bg-white/10 text-white font-semibold rounded-full border border-white/15 hover:border-white/30 transition-all hover:scale-105 whitespace-nowrap cursor-pointer text-sm sm:text-base">
+                <a
+                  href="#contact"
+                  className="px-7 sm:px-8 py-3.5 sm:py-4 bg-white/[0.05] hover:bg-white/[0.09]
+                    text-white font-semibold rounded-full border border-white/[0.14]
+                    hover:border-white/25 transition-all duration-200 hover:scale-105
+                    text-sm sm:text-base"
+                >
                   Contact Us
                 </a>
-              </div>
-              <HeroStatCounters />
-            </div>
+              </motion.div>
 
-            {/* Right – laptop mockup (desktop only) */}
-            <div className="relative animate-slide-right hidden lg:block" style={{ animationDelay: '0.2s' }}>
+              {/* Stats */}
+              <motion.div variants={fadeUp}>
+                <HeroStatCounters />
+              </motion.div>
+            </motion.div>
+
+            {/* ── Right col — browser mockup ── */}
+            <motion.div
+              className="relative hidden lg:block"
+              initial={{ opacity: 0, x: 60, scale: 0.95 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              transition={{ duration: 1, delay: 0.45, ease: [0.22, 1, 0.36, 1] }}
+            >
               <div className="animate-float">
-                <div className="absolute -inset-8 bg-purple-600/15 rounded-3xl blur-3xl"></div>
-                <div className="relative animate-pulse-glow rounded-2xl">
-                  <div className="relative bg-gradient-to-b from-zinc-800 to-zinc-900 rounded-2xl p-3 shadow-2xl border border-white/10">
-                    <div className="bg-zinc-900 rounded-t-xl px-4 py-2.5 flex items-center gap-2 border-b border-white/5">
-                      <div className="flex gap-1.5">
-                        <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
-                        <div className="w-3 h-3 rounded-full bg-yellow-500/80"></div>
-                        <div className="w-3 h-3 rounded-full bg-green-500/80"></div>
-                      </div>
-                      <div className="flex-1 bg-zinc-800 rounded-md px-3 py-1 text-xs text-zinc-500 ml-2 flex items-center gap-1.5 min-w-0">
-                        <i className="ri-lock-line text-green-400 text-xs flex-shrink-0"></i>
-                        <span className="truncate">annascarelb.com</span>
-                      </div>
+                {/* Glow halos */}
+                <div className="absolute -inset-14 bg-purple-600/12 rounded-[3rem] blur-3xl" />
+                <div className="absolute -inset-6 bg-purple-500/8 rounded-3xl blur-xl" />
+                {/* Browser frame */}
+                <div className="animate-pulse-glow relative bg-gradient-to-b
+                  from-zinc-800/80 to-zinc-900/80 rounded-2xl p-2.5
+                  shadow-2xl border border-white/[0.09] backdrop-blur-sm">
+                  {/* Chrome bar */}
+                  <div className="bg-zinc-900/90 rounded-t-xl px-4 py-2.5 flex items-center
+                    gap-2 border-b border-white/[0.05]">
+                    <div className="flex gap-1.5">
+                      <div className="w-3 h-3 rounded-full bg-red-500/80" />
+                      <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
+                      <div className="w-3 h-3 rounded-full bg-green-500/80" />
                     </div>
-                    <div className="overflow-hidden rounded-b-xl">
-                      <img src={projects.filter((p) => p.website)[0]?.website?.screenshot ?? ''} alt="Website Preview" className="w-full h-auto object-cover object-top" />
+                    <div className="flex-1 bg-zinc-800 rounded-md px-3 py-1 text-xs
+                      text-zinc-500 ml-2 flex items-center gap-1.5">
+                      <i className="ri-lock-line text-green-400 text-xs flex-shrink-0" />
+                      <span className="truncate">annascarelb.com</span>
                     </div>
                   </div>
-                  <div className="absolute -bottom-4 -left-6 bg-zinc-900 border border-white/10 rounded-2xl px-4 py-3 shadow-xl flex items-center gap-3">
-                    <div className="w-9 h-9 flex items-center justify-center bg-green-500/20 rounded-xl flex-shrink-0">
-                      <i className="ri-line-chart-line text-green-400 text-lg"></i>
+                  {/* Screenshot */}
+                  <div className="overflow-hidden rounded-b-xl">
+                    <img
+                      src={projects.find((p) => p.website)?.website?.screenshot ?? ''}
+                      alt="Website preview"
+                      className="w-full h-auto object-cover object-top"
+                    />
+                  </div>
+
+                  {/* Floating stat chips */}
+                  <div className="absolute -bottom-5 -left-8 bg-zinc-900/95 border border-white/[0.09]
+                    rounded-2xl px-4 py-3 shadow-2xl backdrop-blur-sm flex items-center gap-3">
+                    <div className="w-9 h-9 flex items-center justify-center
+                      bg-green-500/20 rounded-xl flex-shrink-0">
+                      <i className="ri-line-chart-line text-green-400 text-lg" />
                     </div>
                     <div>
                       <div className="text-xs text-white/40">Monthly Visitors</div>
                       <div className="text-sm font-bold text-white">+340% Growth</div>
                     </div>
                   </div>
-                  <div className="absolute -top-4 -right-6 bg-zinc-900 border border-white/10 rounded-2xl px-4 py-3 shadow-xl flex items-center gap-3">
-                    <div className="w-9 h-9 flex items-center justify-center bg-purple-500/20 rounded-xl flex-shrink-0">
-                      <i className="ri-speed-line text-purple-400 text-lg"></i>
+                  <div className="absolute -top-5 -right-8 bg-zinc-900/95 border border-white/[0.09]
+                    rounded-2xl px-4 py-3 shadow-2xl backdrop-blur-sm flex items-center gap-3">
+                    <div className="w-9 h-9 flex items-center justify-center
+                      bg-purple-500/20 rounded-xl flex-shrink-0">
+                      <i className="ri-speed-line text-purple-400 text-lg" />
                     </div>
                     <div>
                       <div className="text-xs text-white/40">Page Speed</div>
@@ -223,246 +471,547 @@ export default function HomePage() {
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
 
-        <div className="animate-hero-scroll-hint absolute bottom-8 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-2 hidden md:flex">
-          <span className="text-xs tracking-widest uppercase text-white/55">Scroll</span>
-          <div className="w-px h-10 bg-gradient-to-b from-white/50 to-transparent rounded-full"></div>
+        {/* Scroll hint */}
+        <div
+          className="animate-scroll-hint absolute bottom-8 left-1/2 hidden md:flex
+            flex-col items-center gap-2"
+          aria-hidden
+        >
+          <span className="text-[9px] tracking-[0.2em] uppercase text-white/25">Scroll</span>
+          <div className="w-px h-10 bg-gradient-to-b from-white/35 to-transparent" />
         </div>
       </section>
 
-      {/* ── What We Do Section ── */}
-      <section id="what-we-do" className="py-16 sm:py-24 lg:py-32 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#080808] via-[#0d0d0d] to-[#080808]"></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] sm:w-[700px] h-[400px] sm:h-[700px] bg-purple-700/10 rounded-full blur-[140px] pointer-events-none"></div>
+      {/* ═══════════════════════════════════════════════════════
+          WHAT WE DO
+      ═══════════════════════════════════════════════════════ */}
+      <section id="what-we-do" className="py-20 sm:py-28 lg:py-36 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#020208] via-[#06040f] to-[#020208]" />
+        <div className="absolute inset-0 bg-dot-pattern opacity-60" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
+          w-[500px] sm:w-[700px] h-[500px] sm:h-[700px]
+          bg-purple-700/7 rounded-full blur-[150px] pointer-events-none" />
+
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-16">
-          <div className="text-center mb-10 sm:mb-16 observe-animation">
-            <span className="inline-block text-xs font-semibold tracking-widest uppercase text-purple-400 mb-4">What We Do</span>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white mb-4">
+
+          {/* Header */}
+          <motion.div
+            className="text-center mb-14 sm:mb-18"
+            variants={fadeUp}
+            initial="hidden"
+            whileInView="visible"
+            viewport={VP}
+          >
+            <span className="inline-block text-xs font-semibold tracking-[0.18em]
+              uppercase text-purple-400 mb-4">
+              What We Do
+            </span>
+            <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white
+              mb-4 tracking-tight">
               Choose Your Path to<br />
               <span className="gradient-text">Business Growth</span>
             </h2>
-            <p className="text-white/45 text-base sm:text-lg max-w-2xl mx-auto">Whether you need a stunning website or powerful social media presence, we've got you covered.</p>
-          </div>
+            <p className="text-white/62 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
+              Whether you need a stunning website or a powerful social media presence,
+              we've got you covered.
+            </p>
+          </motion.div>
 
-          <div className="grid sm:grid-cols-2 gap-6 sm:gap-8 max-w-5xl mx-auto">
-            {/* Website Card */}
-            <div className="observe-animation group relative rounded-3xl overflow-hidden border border-white/10 bg-gradient-to-br from-white/[0.05] to-white/[0.02] hover:border-purple-500/40 hover:-translate-y-2 transition-all duration-500 hover:shadow-2xl hover:shadow-purple-500/20">
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-600/0 via-purple-600/0 to-purple-600/5 group-hover:from-purple-600/10 group-hover:via-purple-600/5 group-hover:to-purple-600/10 transition-all duration-500"></div>
-              <div className="relative p-6 sm:p-10">
-                <div className="w-14 h-14 flex items-center justify-center bg-purple-500/15 border border-purple-500/30 rounded-2xl mb-5 sm:mb-6 group-hover:bg-purple-500/25 group-hover:scale-110 transition-all duration-300">
-                  <i className="ri-window-line text-2xl sm:text-3xl text-purple-400"></i>
-                </div>
-                <h3 className="text-xl sm:text-2xl font-extrabold text-white mb-3 sm:mb-4">Website Development</h3>
-                <p className="text-white/50 text-sm sm:text-base leading-relaxed mb-6 sm:mb-8">
-                  Fast, modern, and mobile-optimized websites designed to convert visitors into customers. Perfect for restaurants, clinics, gyms, and local businesses.
+          {/* Two cards */}
+          <motion.div
+            className="grid sm:grid-cols-2 gap-6 sm:gap-8 max-w-5xl mx-auto"
+            variants={stagger}
+            initial="hidden"
+            whileInView="visible"
+            viewport={VP}
+          >
+            {/* Website card */}
+            <motion.div
+              variants={scaleIn}
+              whileHover={{ y: -9, scale: 1.015 }}
+              transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+              className="group relative rounded-3xl overflow-hidden border border-white/[0.09]
+                bg-gradient-to-br from-white/[0.05] to-white/[0.02]
+                hover:border-purple-500/40 hover:shadow-2xl hover:shadow-purple-500/15
+                transition-all duration-500"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-600/0 to-purple-600/4
+                group-hover:from-purple-600/10 group-hover:to-purple-600/8
+                transition-all duration-500" />
+              <div className="relative p-8 sm:p-10">
+                <motion.div
+                  whileHover={{ scale: 1.12, rotate: 4 }}
+                  className="w-14 h-14 flex items-center justify-center
+                    bg-purple-500/15 border border-purple-500/30 rounded-2xl mb-7
+                    transition-colors duration-300 group-hover:bg-purple-500/25"
+                >
+                  <i className="ri-window-line text-2xl sm:text-3xl text-purple-400" />
+                </motion.div>
+                <h3 className="text-xl sm:text-2xl font-extrabold text-white mb-3 tracking-tight">
+                  Website Development
+                </h3>
+                <p className="text-white/65 text-sm sm:text-base leading-relaxed mb-7">
+                  Fast, modern, and mobile-optimized websites designed to convert
+                  visitors into customers. Perfect for restaurants, clinics, gyms,
+                  and local businesses.
                 </p>
-                <ul className="space-y-2.5 sm:space-y-3 mb-6 sm:mb-8">
-                  {['Responsive Design', 'SEO Optimized', 'Fast Loading', 'WhatsApp Integration'].map((feature) => (
-                    <li key={feature} className="flex items-center gap-3 text-sm text-white/60">
-                      <span className="w-5 h-5 flex items-center justify-center bg-purple-500/20 rounded-full flex-shrink-0">
-                        <i className="ri-check-line text-purple-400 text-xs"></i>
+                <ul className="space-y-3 mb-8">
+                  {['Responsive Design', 'SEO Optimized', 'Fast Loading', 'WhatsApp Integration'].map((f) => (
+                    <li key={f} className="flex items-center gap-3 text-sm text-white/60">
+                      <span className="w-5 h-5 flex items-center justify-center
+                        bg-purple-500/20 rounded-full flex-shrink-0">
+                        <i className="ri-check-line text-purple-400 text-xs" />
                       </span>
-                      {feature}
+                      {f}
                     </li>
                   ))}
                 </ul>
-                <a href="#projects" className="inline-flex items-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 bg-purple-600 hover:bg-purple-500 text-white text-sm font-semibold rounded-full transition-all hover:scale-105 hover:shadow-lg hover:shadow-purple-500/30 whitespace-nowrap cursor-pointer">
-                  View Our Websites <i className="ri-arrow-right-line"></i>
+                <a
+                  href="#projects"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600
+                    hover:bg-purple-500 text-white text-sm font-semibold rounded-full
+                    transition-all duration-200 hover:scale-105 hover:shadow-lg
+                    hover:shadow-purple-500/30"
+                >
+                  View Our Websites <i className="ri-arrow-right-line" />
                 </a>
               </div>
-            </div>
+            </motion.div>
 
-            {/* Marketing Card */}
-            <div className="observe-animation group relative rounded-3xl overflow-hidden border border-white/10 bg-gradient-to-br from-white/[0.05] to-white/[0.02] hover:border-purple-500/40 hover:-translate-y-2 transition-all duration-500 hover:shadow-2xl hover:shadow-purple-500/20">
-              <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-600/0 via-purple-600/0 to-violet-600/5 group-hover:from-fuchsia-600/10 group-hover:via-purple-600/5 group-hover:to-violet-600/10 transition-all duration-500"></div>
-              <div className="relative p-6 sm:p-10">
-                <div className="w-14 h-14 flex items-center justify-center bg-fuchsia-500/15 border border-fuchsia-500/30 rounded-2xl mb-5 sm:mb-6 group-hover:bg-fuchsia-500/25 group-hover:scale-110 transition-all duration-300">
-                  <i className="ri-megaphone-line text-2xl sm:text-3xl text-fuchsia-400"></i>
-                </div>
-                <h3 className="text-xl sm:text-2xl font-extrabold text-white mb-3 sm:mb-4">Marketing & Social Media</h3>
-                <p className="text-white/50 text-sm sm:text-base leading-relaxed mb-6 sm:mb-8">
-                  Grow your brand on Instagram, Facebook, and TikTok. We create content, run ads, and build engaged communities that drive real business results.
+            {/* Marketing card */}
+            <motion.div
+              variants={scaleIn}
+              whileHover={{ y: -9, scale: 1.015 }}
+              transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+              className="group relative rounded-3xl overflow-hidden border border-white/[0.09]
+                bg-gradient-to-br from-white/[0.05] to-white/[0.02]
+                hover:border-fuchsia-500/40 hover:shadow-2xl hover:shadow-fuchsia-500/15
+                transition-all duration-500"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-600/0 to-violet-600/4
+                group-hover:from-fuchsia-600/10 group-hover:to-violet-600/8
+                transition-all duration-500" />
+              <div className="relative p-8 sm:p-10">
+                <motion.div
+                  whileHover={{ scale: 1.12, rotate: -4 }}
+                  className="w-14 h-14 flex items-center justify-center
+                    bg-fuchsia-500/15 border border-fuchsia-500/30 rounded-2xl mb-7
+                    transition-colors duration-300 group-hover:bg-fuchsia-500/25"
+                >
+                  <i className="ri-megaphone-line text-2xl sm:text-3xl text-fuchsia-400" />
+                </motion.div>
+                <h3 className="text-xl sm:text-2xl font-extrabold text-white mb-3 tracking-tight">
+                  Marketing & Social Media
+                </h3>
+                <p className="text-white/65 text-sm sm:text-base leading-relaxed mb-7">
+                  Grow your brand on Instagram, Facebook, and TikTok with targeted
+                  campaigns and compelling content that drives real business results.
                 </p>
-                <ul className="space-y-2.5 sm:space-y-3 mb-6 sm:mb-8">
-                  {['Content Creation', 'Social Media Management', 'Paid Advertising', 'Analytics & Reporting'].map((feature) => (
-                    <li key={feature} className="flex items-center gap-3 text-sm text-white/60">
-                      <span className="w-5 h-5 flex items-center justify-center bg-fuchsia-500/20 rounded-full flex-shrink-0">
-                        <i className="ri-check-line text-fuchsia-400 text-xs"></i>
+                <ul className="space-y-3 mb-8">
+                  {['Content Creation', 'Social Media Management', 'Paid Advertising', 'Analytics & Reporting'].map((f) => (
+                    <li key={f} className="flex items-center gap-3 text-sm text-white/60">
+                      <span className="w-5 h-5 flex items-center justify-center
+                        bg-fuchsia-500/20 rounded-full flex-shrink-0">
+                        <i className="ri-check-line text-fuchsia-400 text-xs" />
                       </span>
-                      {feature}
+                      {f}
                     </li>
                   ))}
                 </ul>
-                <a href="#marketing" className="inline-flex items-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 bg-fuchsia-600 hover:bg-fuchsia-500 text-white text-sm font-semibold rounded-full transition-all hover:scale-105 hover:shadow-lg hover:shadow-fuchsia-500/30 whitespace-nowrap cursor-pointer">
-                  Explore Marketing <i className="ri-arrow-right-line"></i>
+                <a
+                  href="#marketing"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-fuchsia-600
+                    hover:bg-fuchsia-500 text-white text-sm font-semibold rounded-full
+                    transition-all duration-200 hover:scale-105 hover:shadow-lg
+                    hover:shadow-fuchsia-500/30"
+                >
+                  Explore Marketing <i className="ri-arrow-right-line" />
                 </a>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
-      {/* ── Industries we work with ── */}
-      <section className="py-12 sm:py-16 lg:py-20 relative border-b border-white/5">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#080808] to-[#0a0a0a]"></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(90vw,520px)] h-40 bg-purple-600/8 rounded-full blur-[80px] pointer-events-none"></div>
-        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-16">
-          <div className="text-center mb-8 sm:mb-10 observe-animation">
-            <span className="inline-block text-xs font-semibold tracking-widest uppercase text-purple-400/90 mb-3">Who we partner with</span>
-            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">
-              Sectors we <span className="gradient-text">build for</span>
-            </h2>
-            <p className="text-white/40 text-sm sm:text-base mt-2 max-w-xl mx-auto leading-relaxed">
-              We work with—and are actively building for—HVAC companies, perfume and retail brands, e‑commerce, restaurants, cafés, beauty clinics, gyms, and more.
-            </p>
-          </div>
-          <div className="flex flex-wrap justify-center gap-2 sm:gap-2.5 observe-animation">
-            {[
-              { icon: 'ri-windy-line', label: 'HVAC' },
-              { icon: 'ri-drop-line', label: 'Perfume stores' },
-              { icon: 'ri-shopping-bag-3-line', label: 'E‑commerce' },
-              { icon: 'ri-restaurant-line', label: 'Restaurants' },
-              { icon: 'ri-cup-line', label: 'Cafés' },
-              { icon: 'ri-heart-pulse-line', label: 'Beauty clinics' },
-              { icon: 'ri-run-line', label: 'Gyms' }
-            ].map((item) => (
+      {/* ═══════════════════════════════════════════════════════
+          INDUSTRIES TICKER
+      ═══════════════════════════════════════════════════════ */}
+      <section
+        aria-hidden
+        className="relative py-10 sm:py-14 overflow-hidden border-y border-white/[0.05]"
+      >
+        <div className="absolute inset-0 bg-[#030409]" />
+        {/* Fade masks */}
+        <div className="absolute left-0 top-0 bottom-0 w-24 sm:w-40
+          bg-gradient-to-r from-[#030409] to-transparent z-10 pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-24 sm:w-40
+          bg-gradient-to-l from-[#030409] to-transparent z-10 pointer-events-none" />
+
+        <div className="flex overflow-hidden">
+          <div className="flex gap-4 animate-ticker-ltr flex-none">
+            {[...industries, ...industries].map((item, i) => (
               <div
-                key={item.label}
-                className="inline-flex items-center gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-full border border-white/10 bg-white/[0.035] hover:border-purple-500/30 hover:bg-purple-500/[0.07] transition-all duration-300"
+                key={i}
+                className="inline-flex items-center gap-2.5 px-5 py-3 rounded-full
+                  border border-white/[0.09] bg-white/[0.03] whitespace-nowrap flex-shrink-0"
               >
-                <i className={`${item.icon} text-purple-400 text-sm sm:text-base`}></i>
-                <span className="text-xs sm:text-sm font-medium text-white/80">{item.label}</span>
+                <i className={`${item.icon} text-purple-400 text-base`} />
+                <span className="text-sm font-medium text-white/65">{item.label}</span>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── Projects Section ── */}
-      <section id="projects" className="py-16 sm:py-24 lg:py-32 relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#080808] via-[#0d0d0d] to-[#080808]"></div>
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-32 bg-gradient-to-b from-transparent via-purple-500/40 to-transparent"></div>
+      {/* ═══════════════════════════════════════════════════════
+          PROJECTS
+      ═══════════════════════════════════════════════════════ */}
+      <section id="projects" className="py-20 sm:py-28 lg:py-36 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#020208] via-[#04020e] to-[#020208]" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-40
+          bg-gradient-to-b from-transparent via-purple-500/40 to-transparent pointer-events-none" />
+
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-16">
-          <div className="text-center mb-10 sm:mb-16 observe-animation">
-            <span className="inline-block text-xs font-semibold tracking-widest uppercase text-purple-400 mb-4">Our Work</span>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white mb-4">
+
+          {/* Header */}
+          <motion.div
+            className="text-center mb-12 sm:mb-16"
+            variants={fadeUp}
+            initial="hidden"
+            whileInView="visible"
+            viewport={VP}
+          >
+            <span className="inline-block text-xs font-semibold tracking-[0.18em]
+              uppercase text-purple-400 mb-4">
+              Our Work
+            </span>
+            <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white
+              mb-4 tracking-tight">
               Websites We Built<br />
               <span className="gradient-text">for Businesses</span>
             </h2>
-            <p className="text-white/45 text-base sm:text-lg max-w-xl mx-auto">Real projects. Real results. Every site is crafted to convert visitors into loyal customers.</p>
-          </div>
+            <p className="text-white/62 text-base sm:text-lg max-w-xl mx-auto leading-relaxed">
+              Real projects. Real results. Every site is crafted to convert visitors
+              into loyal customers.
+            </p>
+          </motion.div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-            {projects.filter((p) => p.website).map((project, index) => (
-              <div
+          {/* Grid */}
+          <motion.div
+            className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6"
+            variants={stagger}
+            initial="hidden"
+            whileInView="visible"
+            viewport={VP}
+          >
+            {websiteProjects.map((project) => (
+              <motion.div
                 key={project.id}
-                className="observe-animation group relative rounded-2xl overflow-hidden border border-white/8 bg-white/[0.03] hover:border-purple-500/40 hover:-translate-y-2 transition-all duration-400 hover:shadow-2xl hover:shadow-purple-500/10"
-                style={{ transitionDelay: `${index * 80}ms` }}
-                data-product-shop
+                variants={scaleIn}
+                whileHover={{ y: -7 }}
+                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                className="group relative rounded-2xl overflow-hidden border border-white/[0.07]
+                  bg-white/[0.025] hover:border-purple-500/40
+                  hover:shadow-2xl hover:shadow-purple-500/10
+                  transition-all duration-500"
               >
+                {/* Image */}
                 <div className="relative overflow-hidden aspect-[16/10]">
-                  <img src={project.website!.screenshot} alt={project.name} className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-                  <div className="absolute inset-0 bg-purple-600/0 group-hover:bg-purple-600/10 transition-colors duration-300"></div>
-                  <div className="absolute top-3 left-3 px-3 py-1 bg-black/60 backdrop-blur-sm rounded-full border border-white/10 text-xs text-white/70 font-medium">
+                  <img
+                    src={project.website!.screenshot}
+                    alt={project.name}
+                    className="w-full h-full object-cover object-top
+                      group-hover:scale-[1.06] transition-transform duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t
+                    from-black/80 via-black/15 to-transparent" />
+                  <div className="absolute inset-0 bg-purple-600/0
+                    group-hover:bg-purple-600/8 transition-colors duration-400" />
+                  {/* Industry badge */}
+                  <div className="absolute top-3 left-3 px-3 py-1
+                    bg-black/60 backdrop-blur-sm rounded-full border border-white/[0.09]
+                    text-xs text-white/70 font-medium">
                     {project.industry}
                   </div>
                 </div>
-                <div className="p-4 sm:p-6">
-                  <h3 className="text-base sm:text-lg font-bold text-white mb-3">{project.name}</h3>
-                  <ul className="space-y-1.5 mb-5 sm:mb-6">
-                    {project.website!.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-center gap-2 text-sm text-white/50">
-                        <span className="w-1.5 h-1.5 rounded-full bg-purple-400 flex-shrink-0"></span>
-                        {feature}
+
+                {/* Info */}
+                <div className="p-5 sm:p-6">
+                  <h3 className="text-base sm:text-lg font-bold text-white mb-3 tracking-tight">
+                    {project.name}
+                  </h3>
+                  <ul className="space-y-1.5 mb-5">
+                    {project.website!.features.map((feat, fi) => (
+                      <li key={fi} className="flex items-center gap-2 text-sm text-white/62">
+                        <span className="w-1.5 h-1.5 rounded-full bg-purple-400/70 flex-shrink-0" />
+                        {feat}
                       </li>
                     ))}
                   </ul>
                   <div className="flex gap-2 sm:gap-3">
-                    <Link to={`/case-study/${project.id}`} className={`px-3 sm:px-4 py-2.5 bg-purple-600 hover:bg-purple-500 text-white text-xs sm:text-sm font-semibold rounded-xl transition-all text-center whitespace-nowrap ${project.website!.liveUrl ? 'flex-1' : 'w-full'}`}>
+                    <Link
+                      to={`/case-study/${project.id}`}
+                      className={`px-4 py-2.5 bg-purple-600 hover:bg-purple-500 text-white
+                        text-xs sm:text-sm font-semibold rounded-xl transition-all
+                        duration-200 text-center hover:scale-[1.02]
+                        ${project.website!.liveUrl ? 'flex-1' : 'w-full'}`}
+                    >
                       View Case Study
                     </Link>
                     {project.website!.liveUrl && (
-                      <a href={project.website!.liveUrl} target="_blank" rel="noopener noreferrer" className="flex-1 px-3 sm:px-4 py-2.5 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white text-xs sm:text-sm font-medium rounded-xl border border-white/10 flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer transition-all">
-                        Visit <i className="ri-external-link-line"></i>
+                      <a
+                        href={project.website!.liveUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 px-4 py-2.5 bg-white/[0.04] hover:bg-white/[0.09]
+                          text-white/65 hover:text-white text-xs sm:text-sm font-medium
+                          rounded-xl border border-white/[0.09] flex items-center
+                          justify-center gap-1.5 transition-all duration-200"
+                      >
+                        Visit <i className="ri-external-link-line" />
                       </a>
                     )}
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
 
-          <div className="text-center mt-10 sm:mt-12 observe-animation">
-            <Link to="/projects" className="inline-flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-3.5 border border-white/15 hover:border-purple-500/50 text-white/70 hover:text-white text-sm font-semibold rounded-full transition-all hover:bg-purple-500/10 cursor-pointer">
-              View All Projects <i className="ri-arrow-right-line"></i>
+          {/* CTA */}
+          <motion.div
+            className="text-center mt-10 sm:mt-14"
+            variants={fadeUp}
+            initial="hidden"
+            whileInView="visible"
+            viewport={VP}
+          >
+            <Link
+              to="/projects"
+              className="inline-flex items-center gap-2 px-8 py-3.5 border border-white/[0.13]
+                hover:border-purple-500/50 text-white/65 hover:text-white text-sm font-semibold
+                rounded-full transition-all duration-200 hover:bg-purple-500/10 hover:scale-105"
+            >
+              View All Projects <i className="ri-arrow-right-line" />
             </Link>
-          </div>
+          </motion.div>
         </div>
       </section>
 
-      {/* ── Services Section ── */}
-      <section id="services" className="py-16 sm:py-24 lg:py-32 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[#0a0a0a]"></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] sm:w-[600px] h-[400px] sm:h-[600px] bg-purple-700/8 rounded-full blur-[120px] pointer-events-none"></div>
+      {/* ═══════════════════════════════════════════════════════
+          WEB SERVICES — NUMBERED
+      ═══════════════════════════════════════════════════════ */}
+      <section id="services" className="py-20 sm:py-28 lg:py-36 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[#030409]" />
+        <div className="absolute inset-0 bg-grid-pattern opacity-70" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
+          w-[460px] h-[460px] bg-purple-700/6 rounded-full blur-[140px] pointer-events-none" />
+
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-16">
-          <div className="text-center mb-10 sm:mb-16 observe-animation">
-            <span className="inline-block text-xs font-semibold tracking-widest uppercase text-purple-400 mb-4">What We Offer</span>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white mb-4">Our Services</h2>
-            <p className="text-white/45 text-base sm:text-lg max-w-xl mx-auto">Everything your business needs to dominate online.</p>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-            {[
-              { icon: 'ri-store-3-line', title: 'Business Websites', desc: 'Modern, fast websites for restaurants, gyms, clinics and all local businesses — built to impress and convert.', color: 'from-purple-600/20 to-violet-600/10', border: 'hover:border-purple-500/40' },
-              { icon: 'ri-restaurant-line', title: 'Restaurant Menu Sites', desc: 'Beautiful digital menus optimized for mobile ordering, with WhatsApp integration and delivery info.', color: 'from-fuchsia-600/20 to-purple-600/10', border: 'hover:border-fuchsia-500/40' },
-              { icon: 'ri-rocket-2-line', title: 'Landing Pages', desc: 'High-converting landing pages for promotions, services, and campaigns — designed to drive action.', color: 'from-violet-600/20 to-indigo-600/10', border: 'hover:border-violet-500/40' },
-            ].map((service) => (
-              <div key={service.title} className={`observe-animation group relative p-6 sm:p-8 rounded-2xl border border-white/8 bg-white/[0.02] ${service.border} hover:-translate-y-1 transition-all duration-300 overflow-hidden`}>
-                <div className={`absolute inset-0 bg-gradient-to-br ${service.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}></div>
-                <div className="relative">
-                  <div className="w-12 sm:w-14 h-12 sm:h-14 flex items-center justify-center bg-purple-500/15 border border-purple-500/20 rounded-2xl mb-5 sm:mb-6 group-hover:bg-purple-500/25 transition-colors">
-                    <i className={`${service.icon} text-xl sm:text-2xl text-purple-400`}></i>
+
+          <motion.div
+            className="mb-16 sm:mb-20"
+            variants={stagger}
+            initial="hidden"
+            whileInView="visible"
+            viewport={VP}
+          >
+            <motion.span
+              variants={fadeLeft}
+              className="inline-block text-xs font-semibold tracking-[0.18em]
+                uppercase text-purple-400 mb-4"
+            >
+              What We Offer
+            </motion.span>
+            <motion.h2
+              variants={fadeLeft}
+              className="font-display text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight"
+            >
+              Our Services
+            </motion.h2>
+          </motion.div>
+
+          {/* Numbered rows */}
+          <div className="divide-y divide-white/[0.07]">
+            {services.map((svc) => {
+              const c = colorMap[svc.color];
+              return (
+                <motion.div
+                  key={svc.num}
+                  variants={fadeUp}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={VP}
+                  className="group relative flex items-start gap-5 sm:gap-10 py-10 sm:py-14
+                    cursor-default"
+                >
+                  {/* Hover bg glow */}
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r
+                    from-purple-600/0 to-transparent opacity-0 group-hover:opacity-[0.04]
+                    transition-opacity duration-500" />
+
+                  {/* Large number */}
+                  <div
+                    className={`text-[3.5rem] sm:text-[5.5rem] lg:text-[7rem] font-black
+                      leading-none select-none flex-shrink-0 w-14 sm:w-24 lg:w-32
+                      font-mono tracking-tight transition-colors duration-300 ${c.numText}`}
+                  >
+                    {svc.num}
                   </div>
-                  <h3 className="text-lg sm:text-xl font-bold text-white mb-3">{service.title}</h3>
-                  <p className="text-white/50 text-sm leading-relaxed">{service.desc}</p>
-                </div>
-              </div>
-            ))}
+
+                  {/* Content */}
+                  <div className="flex-1 pt-1 sm:pt-3 min-w-0">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className={`w-10 h-10 flex items-center justify-center rounded-xl
+                        border ${c.iconBg} flex-shrink-0`}>
+                        <i className={`${svc.icon} text-lg ${c.iconText}`} />
+                      </div>
+                      <h3 className="text-xl sm:text-2xl lg:text-3xl font-extrabold
+                        text-white tracking-tight">
+                        {svc.title}
+                      </h3>
+                    </div>
+                    <p className="text-white/62 text-sm sm:text-base leading-relaxed max-w-2xl">
+                      {svc.desc}
+                    </p>
+                  </div>
+
+                  {/* Arrow chip */}
+                  <div className="hidden sm:flex items-center justify-center
+                    w-11 h-11 rounded-full border border-white/[0.09]
+                    group-hover:border-purple-500/40 group-hover:bg-purple-500/10
+                    transition-all duration-300 flex-shrink-0 self-center">
+                    <i className="ri-arrow-right-line text-white/25
+                      group-hover:text-purple-400 transition-colors duration-300" />
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* ── Marketing Services Section ── */}
-      <section id="marketing" className="py-16 sm:py-24 lg:py-32 relative overflow-hidden border-y border-white/5">
-        <div className="absolute inset-0 bg-[#080808]"></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] sm:w-[600px] h-[400px] sm:h-[600px] bg-fuchsia-700/8 rounded-full blur-[120px] pointer-events-none"></div>
+      {/* ═══════════════════════════════════════════════════════
+          MARKETING SERVICES
+      ═══════════════════════════════════════════════════════ */}
+      <section id="marketing" className="py-20 sm:py-28 lg:py-36 relative overflow-hidden
+        border-y border-white/[0.05]">
+        <div className="absolute inset-0 bg-[#020208]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
+          w-[500px] h-[500px] bg-fuchsia-700/6 rounded-full blur-[140px] pointer-events-none" />
+
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-16">
-          <div className="text-center mb-10 sm:mb-16 observe-animation">
-            <span className="inline-block text-xs font-semibold tracking-widest uppercase text-fuchsia-400 mb-4">Marketing Services</span>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white mb-4">
+
+          <motion.div
+            className="text-center mb-12 sm:mb-16"
+            variants={fadeUp}
+            initial="hidden"
+            whileInView="visible"
+            viewport={VP}
+          >
+            <span className="inline-block text-xs font-semibold tracking-[0.18em]
+              uppercase text-fuchsia-400 mb-4">
+              Marketing Services
+            </span>
+            <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white
+              mb-4 tracking-tight">
               Grow Your Brand on<br />
-              <span className="gradient-text">Social Media</span>
+              <span className="gradient-text-warm">Social Media</span>
             </h2>
-            <p className="text-white/45 text-base sm:text-lg max-w-2xl mx-auto">From content creation to paid ads, we help you build a powerful online presence that attracts and engages customers.</p>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
-            {[
-              { icon: 'ri-instagram-line', title: 'Social Media Management', desc: 'Daily posting, community engagement, and growth strategies for Instagram, Facebook, and TikTok.', color: 'from-fuchsia-600/20 to-pink-600/10', border: 'hover:border-fuchsia-500/40' },
-              { icon: 'ri-palette-line', title: 'Content Creation', desc: 'Professional photos, videos, graphics, and captions that capture attention and drive engagement.', color: 'from-purple-600/20 to-fuchsia-600/10', border: 'hover:border-purple-500/40' },
-              { icon: 'ri-advertisement-line', title: 'Paid Ads (Meta/Google)', desc: 'Targeted ad campaigns on Facebook, Instagram, and Google to reach your ideal customers.', color: 'from-violet-600/20 to-purple-600/10', border: 'hover:border-violet-500/40' },
-              { icon: 'ri-line-chart-line', title: 'Brand Growth Strategy', desc: 'Data-driven strategies to increase followers, engagement, and conversions for your business.', color: 'from-indigo-600/20 to-violet-600/10', border: 'hover:border-indigo-500/40' },
-            ].map((service) => (
-              <div key={service.title} className={`observe-animation group relative p-6 sm:p-8 rounded-2xl border border-white/8 bg-white/[0.02] ${service.border} hover:-translate-y-1 transition-all duration-300 overflow-hidden`}>
-                <div className={`absolute inset-0 bg-gradient-to-br ${service.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}></div>
+            <p className="text-white/62 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
+              From content creation to paid ads, we build a powerful presence
+              that attracts and converts customers.
+            </p>
+          </motion.div>
+
+          <motion.div
+            className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6"
+            variants={stagger}
+            initial="hidden"
+            whileInView="visible"
+            viewport={VP}
+          >
+            {marketingServices.map((svc) => (
+              <motion.div
+                key={svc.title}
+                variants={scaleIn}
+                whileHover={{ y: -7, scale: 1.02 }}
+                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                className="group relative p-6 sm:p-8 rounded-2xl border border-white/[0.07]
+                  bg-white/[0.02] hover:border-fuchsia-500/30
+                  hover:shadow-xl hover:shadow-fuchsia-500/10
+                  transition-all duration-500 overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-600/0 to-purple-600/4
+                  group-hover:from-fuchsia-600/8 group-hover:to-purple-600/10
+                  transition-all duration-500" />
                 <div className="relative">
-                  <div className="w-12 sm:w-14 h-12 sm:h-14 flex items-center justify-center bg-fuchsia-500/15 border border-fuchsia-500/20 rounded-2xl mb-5 sm:mb-6 group-hover:bg-fuchsia-500/25 transition-colors">
-                    <i className={`${service.icon} text-xl sm:text-2xl text-fuchsia-400`}></i>
-                  </div>
-                  <h3 className="text-base sm:text-lg font-bold text-white mb-3">{service.title}</h3>
-                  <p className="text-white/50 text-sm leading-relaxed">{service.desc}</p>
+                  <motion.div
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    className="w-12 h-12 flex items-center justify-center
+                      bg-fuchsia-500/15 border border-fuchsia-500/20 rounded-xl mb-5
+                      transition-colors duration-300 group-hover:bg-fuchsia-500/25"
+                  >
+                    <i className={`${svc.icon} text-xl text-fuchsia-400`} />
+                  </motion.div>
+                  <h3 className="text-base sm:text-lg font-bold text-white mb-3 tracking-tight">
+                    {svc.title}
+                  </h3>
+                  <p className="text-white/62 text-sm leading-relaxed">{svc.desc}</p>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════
+          TRUSTED BY — CLIENT TICKER
+      ═══════════════════════════════════════════════════════ */}
+      <section className="relative py-14 sm:py-20 overflow-hidden border-b border-white/[0.05]">
+        <div className="absolute inset-0 bg-[#030409]" />
+
+        <motion.div
+          className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-16
+            mb-10 sm:mb-14 text-center"
+          variants={fadeUp}
+          initial="hidden"
+          whileInView="visible"
+          viewport={VP}
+        >
+          <span className="inline-block text-xs font-semibold tracking-[0.18em]
+            uppercase text-purple-400 mb-4">
+            Trusted By
+          </span>
+          <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight">
+            Businesses We've Worked With
+          </h2>
+        </motion.div>
+
+        {/* Client marquee */}
+        <div className="relative overflow-hidden">
+          <div className="absolute left-0 top-0 bottom-0 w-20 sm:w-36
+            bg-gradient-to-r from-[#030409] to-transparent z-10 pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-20 sm:w-36
+            bg-gradient-to-l from-[#030409] to-transparent z-10 pointer-events-none" />
+
+          <div className="flex animate-ticker-rtl" aria-hidden>
+            {[...projects, ...projects, ...projects, ...projects].map((p, i) => (
+              <div
+                key={i}
+                className="flex-shrink-0 mx-3 flex items-center gap-3 px-6 py-4
+                  rounded-2xl border border-white/[0.07] bg-white/[0.02] whitespace-nowrap"
+              >
+                <div className="w-8 h-8 flex items-center justify-center
+                  bg-purple-500/15 rounded-xl flex-shrink-0">
+                  <i className="ri-building-line text-purple-400 text-sm" />
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-white/80">{p.name}</div>
+                  <div className="text-xs text-white/30">{p.industry}</div>
                 </div>
               </div>
             ))}
@@ -470,115 +1019,192 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Trust Section ── */}
-      <section className="py-16 sm:py-20 lg:py-24 relative border-y border-white/5">
-        <div className="absolute inset-0 bg-[#080808]"></div>
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-16">
-          <div className="text-center mb-10 sm:mb-12 observe-animation">
-            <span className="inline-block text-xs font-semibold tracking-widest uppercase text-purple-400 mb-4">Trusted By</span>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white">Businesses We've Worked With</h2>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-            {projects.map((project) => (
-              <div key={project.id} className="observe-animation group flex flex-col items-center justify-center p-4 sm:p-5 rounded-2xl border border-white/6 bg-white/[0.02] hover:border-purple-500/30 hover:bg-purple-500/5 transition-all duration-300 cursor-default">
-                <div className="w-9 h-9 flex items-center justify-center bg-purple-500/10 rounded-xl mb-2.5">
-                  <i className="ri-building-line text-purple-400 text-base sm:text-lg"></i>
-                </div>
-                <div className="text-xs sm:text-sm font-semibold text-white/70 group-hover:text-white text-center transition-colors leading-tight">{project.name}</div>
-                <div className="text-[10px] sm:text-xs text-white/30 mt-1 text-center">{project.industry}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Contact Section ── */}
-      <section id="contact" className="py-16 sm:py-24 lg:py-32 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[#0a0a0a]"></div>
-        <div className="absolute inset-0">
-          <img
-            src="https://readdy.ai/api/search-image?query=abstract%20dark%20luxury%20background%20with%20deep%20purple%20violet%20glowing%20gradient%20light%20rays%20on%20black%20background%2C%20cinematic%20moody%20atmosphere%2C%20no%20text%2C%20minimal%2C%20elegant&width=1920&height=800&seq=contact-bg-momentum&orientation=landscape"
-            alt=""
-            className="w-full h-full object-cover object-center opacity-20"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-transparent to-[#0a0a0a]"></div>
-        </div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] sm:w-[500px] h-[300px] sm:h-[500px] bg-purple-600/15 rounded-full blur-[100px] pointer-events-none"></div>
+      {/* ═══════════════════════════════════════════════════════
+          CONTACT CTA
+      ═══════════════════════════════════════════════════════ */}
+      <section id="contact" className="relative py-28 sm:py-36 lg:py-44 overflow-hidden">
+        <div className="absolute inset-0 bg-[#020208]" />
+        <div className="absolute inset-0 bg-grid-pattern" />
+        {/* Radial glows */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
+          w-[700px] h-[700px] bg-purple-600/13 rounded-full blur-[130px] pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
+          w-[350px] h-[350px] bg-fuchsia-500/10 rounded-full blur-[90px] pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
+          w-[150px] h-[150px] bg-white/5 rounded-full blur-[40px] pointer-events-none" />
 
         <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-16 text-center">
-          <div className="observe-animation">
-            <span className="inline-block text-xs font-semibold tracking-widest uppercase text-purple-400 mb-5 sm:mb-6">Let's Talk</span>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white mb-5 sm:mb-6 leading-tight">
+          <motion.div
+            variants={stagger}
+            initial="hidden"
+            whileInView="visible"
+            viewport={VP}
+          >
+            <motion.span
+              variants={fadeUp}
+              className="inline-block text-xs font-semibold tracking-[0.2em]
+                uppercase text-purple-400 mb-5 sm:mb-6"
+            >
+              Let's Talk
+            </motion.span>
+            <motion.h2
+              variants={fadeUp}
+              className="font-display text-4xl sm:text-5xl lg:text-[3.75rem] font-extrabold
+                text-white mb-5 sm:mb-6 leading-tight tracking-tight"
+            >
               Ready to Grow<br />
               <span className="gradient-text">Your Business?</span>
-            </h2>
-            <p className="text-base sm:text-lg text-white/50 leading-relaxed mb-8 sm:mb-10 max-w-xl mx-auto">
-              Whether you need a website, social media growth, or both — we're here to help your business succeed online.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
-              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="px-6 sm:px-8 py-3.5 sm:py-4 bg-[#25D366] hover:bg-[#1ebe5d] text-white font-semibold rounded-full transition-all hover:scale-105 hover:shadow-xl hover:shadow-green-500/25 flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer">
-                <i className="ri-whatsapp-line text-xl"></i>
+            </motion.h2>
+            <motion.p
+              variants={fadeUp}
+              className="text-base sm:text-lg text-white/62 leading-relaxed
+                mb-10 sm:mb-12 max-w-xl mx-auto"
+            >
+              Whether you need a website, social media growth, or both — we're here
+              to help your business succeed online.
+            </motion.p>
+            <motion.div
+              variants={fadeUp}
+              className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center"
+            >
+              <motion.a
+                href={WHATSAPP_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                whileHover={{ scale: 1.06 }}
+                whileTap={{ scale: 0.97 }}
+                className="px-8 py-4 bg-[#25D366] hover:bg-[#1ebe5d] text-white font-semibold
+                  rounded-full transition-colors duration-200 hover:shadow-xl
+                  hover:shadow-green-500/25 flex items-center justify-center gap-2"
+              >
+                <i className="ri-whatsapp-line text-xl" />
                 Contact on WhatsApp
-              </a>
-              <a href={MAILTO_URL} className="px-6 sm:px-8 py-3.5 sm:py-4 bg-white/5 hover:bg-white/10 text-white font-semibold rounded-full border border-white/15 hover:border-white/30 transition-all hover:scale-105 flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer">
-                <i className="ri-mail-line text-xl"></i>
+              </motion.a>
+              <motion.a
+                href={MAILTO_URL}
+                whileHover={{ scale: 1.06 }}
+                whileTap={{ scale: 0.97 }}
+                className="px-8 py-4 bg-white/[0.05] hover:bg-white/[0.09] text-white
+                  font-semibold rounded-full border border-white/[0.14] hover:border-white/25
+                  transition-all duration-200 flex items-center justify-center gap-2"
+              >
+                <i className="ri-mail-line text-xl" />
                 Send Email
-              </a>
-            </div>
-          </div>
+              </motion.a>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
-      {/* ── Footer ── */}
-      <footer className="bg-[#050505] border-t border-white/5 py-12 sm:py-16">
+      {/* ═══════════════════════════════════════════════════════
+          FOOTER
+      ═══════════════════════════════════════════════════════ */}
+      <footer className="bg-[#030409] border-t border-white/[0.05] py-12 sm:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-16">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 sm:gap-12 mb-10 sm:mb-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3
+            gap-8 sm:gap-12 mb-10 sm:mb-12">
+
+            {/* Brand */}
             <div>
               <div className="flex items-center gap-3 mb-4">
-                <img src="/images/momentumLOGO.jpeg" alt="MomentumLB Logo" className="w-9 h-9 object-contain rounded-lg" />
+                <img
+                  src="/images/momentumLOGO.jpeg"
+                  alt="MomentumLB"
+                  className="w-9 h-9 object-contain rounded-xl"
+                />
                 <span className="text-base font-bold text-white">MomentumLB</span>
               </div>
-              <p className="text-sm text-white/35 mb-5 sm:mb-6 leading-relaxed">Building modern websites and growing brands for local businesses across Lebanon.</p>
+              <p className="text-sm text-white/32 mb-5 leading-relaxed">
+                Building modern websites and growing brands for local businesses across Lebanon.
+              </p>
               <div className="flex gap-3">
-                <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="w-9 h-9 flex items-center justify-center bg-white/5 hover:bg-purple-500/20 border border-white/8 hover:border-purple-500/40 rounded-xl transition-all cursor-pointer" aria-label="Instagram">
-                  <i className="ri-instagram-line text-sm text-white/50 hover:text-purple-400"></i>
+                <a
+                  href={INSTAGRAM_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-9 h-9 flex items-center justify-center bg-white/[0.04]
+                    hover:bg-purple-500/20 border border-white/[0.07]
+                    hover:border-purple-500/40 rounded-xl transition-all duration-200"
+                  aria-label="Instagram"
+                >
+                  <i className="ri-instagram-line text-sm text-white/62
+                    hover:text-purple-400 transition-colors" />
                 </a>
               </div>
             </div>
+
+            {/* Links */}
             <div>
-              <h3 className="text-sm font-semibold text-white mb-4 sm:mb-5">Quick Links</h3>
-              <ul className="space-y-2.5 sm:space-y-3">
-                {[{ label: 'Projects', href: '#projects' }, { label: 'Services', href: '#services' }, { label: 'Marketing', href: '#marketing' }, { label: 'Contact', href: '#contact' }].map((link) => (
-                  <li key={link.label}><a href={link.href} className="text-sm text-white/35 hover:text-white transition-colors cursor-pointer">{link.label}</a></li>
+              <h3 className="text-sm font-semibold text-white mb-5">Quick Links</h3>
+              <ul className="space-y-3">
+                {[
+                  { label: 'Projects',  href: '#projects' },
+                  { label: 'Services',  href: '#services' },
+                  { label: 'Marketing', href: '#marketing' },
+                  { label: 'Contact',   href: '#contact' },
+                ].map((link) => (
+                  <li key={link.label}>
+                    <a
+                      href={link.href}
+                      className="text-sm text-white/32 hover:text-white transition-colors duration-200"
+                    >
+                      {link.label}
+                    </a>
+                  </li>
                 ))}
-                <li><Link to="/projects" className="text-sm text-white/35 hover:text-white transition-colors">All Projects</Link></li>
+                <li>
+                  <Link
+                    to="/projects"
+                    className="text-sm text-white/32 hover:text-white transition-colors duration-200"
+                  >
+                    All Projects
+                  </Link>
+                </li>
               </ul>
             </div>
+
+            {/* Contact */}
             <div>
-              <h3 className="text-sm font-semibold text-white mb-4 sm:mb-5">Contact</h3>
-              <ul className="space-y-2.5 sm:space-y-3">
+              <h3 className="text-sm font-semibold text-white mb-5">Contact</h3>
+              <ul className="space-y-3">
                 <li>
-                  <a href={MAILTO_URL} className="flex items-center gap-2.5 text-sm text-white/35 hover:text-white transition-colors">
-                    <i className="ri-mail-line text-purple-400 flex-shrink-0"></i>
+                  <a
+                    href={MAILTO_URL}
+                    className="flex items-center gap-2.5 text-sm text-white/32
+                      hover:text-white transition-colors duration-200"
+                  >
+                    <i className="ri-mail-line text-purple-400 flex-shrink-0" />
                     {EMAIL}
                   </a>
                 </li>
                 <li>
-                  <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 text-sm text-white/35 hover:text-white transition-colors">
-                    <i className="ri-whatsapp-line text-purple-400 flex-shrink-0"></i>
+                  <a
+                    href={WHATSAPP_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2.5 text-sm text-white/32
+                      hover:text-white transition-colors duration-200"
+                  >
+                    <i className="ri-whatsapp-line text-purple-400 flex-shrink-0" />
                     {PHONE_DISPLAY}
                   </a>
                 </li>
-                <li className="flex items-center gap-2.5 text-sm text-white/35"><i className="ri-map-pin-line text-purple-400 flex-shrink-0"></i>Beirut, Lebanon</li>
+                <li className="flex items-center gap-2.5 text-sm text-white/32">
+                  <i className="ri-map-pin-line text-purple-400 flex-shrink-0" />
+                  Beirut, Lebanon
+                </li>
               </ul>
             </div>
           </div>
-          <div className="pt-6 sm:pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
+
+          <div className="pt-6 sm:pt-8 border-t border-white/[0.05] flex flex-col sm:flex-row
+            items-center justify-between gap-3">
             <p className="text-xs text-white/20">© 2025 MomentumLB. All rights reserved.</p>
             <p className="text-xs text-white/20">Crafted with precision in Lebanon 🇱🇧</p>
           </div>
         </div>
       </footer>
+
     </div>
   );
 }
