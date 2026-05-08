@@ -229,6 +229,10 @@ function NetworkCanvas() {
 export function HeroPortals() {
   const [hovered, setHovered]       = useState<number | null>(null);
   const [portalSize, setPortalSize] = useState(210);
+  // Detect touch-primary devices (no hover) once on mount
+  const [isTouch] = useState(() =>
+    typeof window !== 'undefined' && window.matchMedia('(hover: none) and (pointer: coarse)').matches
+  );
   const rm = useReducedMotion();
 
   useEffect(() => {
@@ -333,10 +337,11 @@ export function HeroPortals() {
       </motion.div>
 
       {/* ── Full-screen 2×2 portal grid ── */}
+      {/* max-sm padding keeps expanded portals from overlapping the headline/hint on small phones */}
       <div
         role="group"
         aria-label="Site navigation"
-        className="absolute inset-0 grid grid-cols-2 grid-rows-2 z-10"
+        className="absolute inset-0 grid grid-cols-2 grid-rows-2 z-10 max-sm:pt-[14%] max-sm:pb-[8%]"
       >
         {PORTALS.map((portal, i) => {
           const isHovered = hovered === i;
@@ -362,8 +367,8 @@ export function HeroPortals() {
                 width:   { duration: rm ? 0 : 0.55, ease: EASE },
                 height:  { duration: rm ? 0 : 0.55, ease: EASE },
               }}
-              onHoverStart={() => setHovered(i)}
-              onHoverEnd={() => setHovered(null)}
+              onHoverStart={isTouch ? undefined : () => setHovered(i)}
+              onHoverEnd={isTouch ? undefined : () => setHovered(null)}
             >
               {/* Ping ring */}
               {!rm && (
@@ -407,9 +412,24 @@ export function HeroPortals() {
           );
 
           return (
-            <div key={portal.id} className="flex items-center justify-center">
-              <Link to={portal.to} aria-label={`Go to ${portal.label}`}
-                className="rounded-full outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#020208]">
+            <div
+              key={portal.id}
+              className="flex items-center justify-center"
+              // Touch: tap on empty cell area collapses the open portal
+              onClick={() => { if (isTouch) setHovered(null); }}
+            >
+              <Link
+                to={portal.to}
+                aria-label={`Go to ${portal.label}`}
+                className="rounded-full outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#020208]"
+                onClick={(e) => {
+                  if (!isTouch) return; // desktop: Link navigates normally
+                  e.stopPropagation();  // prevent cell handler from collapsing
+                  if (hovered === i) return; // second tap: let Link navigate
+                  e.preventDefault();        // first tap: expand only
+                  setHovered(i);
+                }}
+              >
                 {circle}
               </Link>
             </div>
@@ -424,7 +444,7 @@ export function HeroPortals() {
         animate={{ opacity: 1 }}
         transition={{ duration: 1.2, delay: 1.7 }}
       >
-        Hover to explore
+        {isTouch ? 'Tap to explore' : 'Hover to explore'}
       </motion.p>
     </div>
   );
