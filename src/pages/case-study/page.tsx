@@ -1,8 +1,9 @@
 import { Link, useParams } from 'react-router-dom';
 import { projects } from '../../mocks/projects';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { MAILTO_URL, WHATSAPP_URL } from '../../constants/contact';
 import { useMeta } from '../../hooks/useMeta';
+import { PageNav } from '../../components/PageNav';
 
 export default function CaseStudyPage() {
   const { id } = useParams<{ id: string }>();
@@ -21,16 +22,8 @@ export default function CaseStudyPage() {
       : undefined,
   });
   const observerRef = useRef<IntersectionObserver | null>(null);
-  const [scrolled, setScrolled] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => { window.scrollTo(0, 0); }, [id]);
-
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 40);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   useEffect(() => {
     observerRef.current = new IntersectionObserver(
@@ -56,37 +49,7 @@ export default function CaseStudyPage() {
   return (
     <div className="min-h-screen bg-[#080808] text-white overflow-x-hidden">
 
-      {/* Nav */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? 'bg-black/90 backdrop-blur-xl border-b border-white/5 shadow-lg shadow-black/40' : 'bg-transparent'}`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-16">
-          <div className="flex items-center justify-between h-16 sm:h-20">
-            <Link to="/" className="flex items-center gap-2.5 group">
-              <img src="/images/momentumLOGO.jpeg" className="w-8 h-8 sm:w-10 sm:h-10 object-contain rounded-lg" />
-              <span className="text-base sm:text-lg font-bold tracking-tight text-white group-hover:text-purple-400 transition-colors">MomentumLB</span>
-            </Link>
-            <div className="hidden md:flex items-center gap-8">
-              <Link to="/" className="text-sm font-medium text-white/60 hover:text-white transition-colors">Home</Link>
-              <Link to="/projects" className="text-sm font-medium text-white/60 hover:text-white transition-colors">Projects</Link>
-              <a href="/#services" className="text-sm font-medium text-white/60 hover:text-white transition-colors cursor-pointer">Services</a>
-              <a href="/#contact" className="text-sm font-medium text-white/60 hover:text-white transition-colors cursor-pointer">Contact</a>
-            </div>
-            <a href="/#contact" className="hidden md:inline-flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white text-sm font-semibold rounded-full transition-all hover:scale-105 hover:shadow-lg hover:shadow-purple-500/30 whitespace-nowrap cursor-pointer">
-              Get Started <i className="ri-arrow-right-line"></i>
-            </a>
-            <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden w-10 h-10 flex items-center justify-center text-white/70 hover:text-white transition-colors">
-              <i className={`text-xl ${menuOpen ? 'ri-close-line' : 'ri-menu-line'}`}></i>
-            </button>
-          </div>
-        </div>
-        {menuOpen && (
-          <div className="md:hidden bg-black/95 backdrop-blur-xl border-t border-white/5 px-4 py-4 flex flex-col gap-4">
-            <Link to="/" onClick={() => setMenuOpen(false)} className="text-sm font-medium text-white/70 hover:text-white transition-colors py-2">Home</Link>
-            <Link to="/projects" onClick={() => setMenuOpen(false)} className="text-sm font-medium text-white/70 hover:text-white transition-colors py-2">Projects</Link>
-            <a href="/#services" onClick={() => setMenuOpen(false)} className="text-sm font-medium text-white/70 hover:text-white transition-colors py-2 cursor-pointer">Services</a>
-            <a href="/#contact" onClick={() => setMenuOpen(false)} className="mt-2 px-5 py-3 bg-purple-600 text-white text-sm font-semibold rounded-full text-center whitespace-nowrap cursor-pointer">Get Started</a>
-          </div>
-        )}
-      </nav>
+      <PageNav current="projects" />
 
       {/* Hero */}
       <section className="relative pt-24 sm:pt-36 pb-12 sm:pb-16 overflow-hidden">
@@ -314,8 +277,9 @@ export default function CaseStudyPage() {
             <div className="flex flex-wrap items-center gap-4 sm:gap-6">
               <Link to="/" className="text-sm text-white/35 hover:text-white transition-colors">Home</Link>
               <Link to="/projects" className="text-sm text-white/35 hover:text-white transition-colors">Projects</Link>
-              <a href="/#services" className="text-sm text-white/35 hover:text-white transition-colors cursor-pointer">Services</a>
-              <a href="/#contact" className="text-sm text-white/35 hover:text-white transition-colors cursor-pointer">Contact</a>
+              <Link to="/services" className="text-sm text-white/35 hover:text-white transition-colors">Services</Link>
+              <Link to="/marketing" className="text-sm text-white/35 hover:text-white transition-colors">Marketing</Link>
+              <Link to="/contact" className="text-sm text-white/35 hover:text-white transition-colors">Contact</Link>
             </div>
             <p className="text-xs text-white/20">© 2025 MomentumLB. All rights reserved.</p>
           </div>

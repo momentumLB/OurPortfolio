@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { EMAIL, INSTAGRAM_URL, MAILTO_URL, PHONE_DISPLAY, WHATSAPP_URL } from '../../constants/contact';
 import { useMeta } from '../../hooks/useMeta';
+import { PageNav } from '../../components/PageNav';
 
 export default function MarketingPage() {
   useMeta({
@@ -10,14 +11,6 @@ export default function MarketingPage() {
     canonical: 'https://momentumlb.com/marketing',
   });
   const observerRef = useRef<IntersectionObserver | null>(null);
-  const [scrolled, setScrolled] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 40);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   useEffect(() => {
     observerRef.current = new IntersectionObserver(
@@ -36,54 +29,12 @@ export default function MarketingPage() {
   return (
     <div className="min-h-screen bg-[#080808] text-white font-sans overflow-x-hidden">
 
-      {/* Navigation */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? 'bg-black/90 backdrop-blur-xl border-b border-white/5 shadow-lg shadow-black/40' : 'bg-transparent'}`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-16">
-          <div className="flex items-center justify-between h-16 sm:h-20">
-            <Link to="/" className="flex items-center gap-2.5 group">
-              <img
-                src="/images/momentumLOGO.jpeg"
-                alt="MomentumLB Logo"
-                className="w-8 h-8 sm:w-10 sm:h-10 object-contain rounded-lg"
-              />
-              <span className="text-base sm:text-lg font-bold tracking-tight text-white group-hover:text-purple-400 transition-colors">MomentumLB</span>
-            </Link>
-            <div className="hidden md:flex items-center gap-8">
-              <Link to="/" className="text-sm font-medium text-white/60 hover:text-white transition-colors">Home</Link>
-              <Link to="/projects" className="text-sm font-medium text-white/60 hover:text-white transition-colors">Projects</Link>
-              <Link to="/marketing" className="text-sm font-medium text-fuchsia-400">Marketing</Link>
-              <a href="/#contact" className="text-sm font-medium text-white/60 hover:text-white transition-colors cursor-pointer">Contact</a>
-            </div>
-            <a href="/#contact" className="hidden md:inline-flex items-center gap-2 px-5 py-2.5 bg-fuchsia-600 hover:bg-fuchsia-500 text-white text-sm font-semibold rounded-full transition-all hover:scale-105 hover:shadow-lg hover:shadow-fuchsia-500/30 whitespace-nowrap cursor-pointer">
-              Get Started <i className="ri-arrow-right-line"></i>
-            </a>
-            <button
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="md:hidden w-10 h-10 flex items-center justify-center text-white/70 hover:text-white transition-colors"
-            >
-              <i className={`text-xl ${menuOpen ? 'ri-close-line' : 'ri-menu-line'}`}></i>
-            </button>
-          </div>
-        </div>
-        {menuOpen && (
-          <div className="md:hidden bg-black/95 backdrop-blur-xl border-t border-white/5 px-4 py-4 flex flex-col gap-4">
-            <Link to="/" onClick={() => setMenuOpen(false)} className="text-sm font-medium text-white/70 hover:text-white transition-colors py-2">Home</Link>
-            <Link to="/projects" onClick={() => setMenuOpen(false)} className="text-sm font-medium text-white/70 hover:text-white transition-colors py-2">Projects</Link>
-            <Link to="/marketing" onClick={() => setMenuOpen(false)} className="text-sm font-medium text-fuchsia-400 py-2">Marketing</Link>
-            <a href="/#contact" onClick={() => setMenuOpen(false)} className="mt-2 px-5 py-3 bg-fuchsia-600 text-white text-sm font-semibold rounded-full text-center whitespace-nowrap cursor-pointer">Get Started</a>
-          </div>
-        )}
-      </nav>
+      <PageNav current="marketing" />
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center overflow-hidden">
         <div className="absolute inset-0 bg-[#080808]"></div>
         <div className="absolute inset-0">
-          <img
-            src="https://readdy.ai/api/search-image?query=abstract%20dark%20luxury%20digital%20background%20with%20vibrant%20fuchsia%20pink%20purple%20gradient%20glowing%20particles%20on%20black%20background%2C%20social%20media%20marketing%20theme%2C%20cinematic%20moody%20atmosphere%2C%20ultra%20high%20quality%2C%20no%20text%2C%20minimal%20elegant&width=1920&height=1080&seq=marketing-hero-bg&orientation=landscape"
-            alt=""
-            className="w-full h-full object-cover object-center opacity-25"
-          />
           <div className="absolute inset-0 bg-gradient-to-r from-[#080808] via-[#080808]/80 to-transparent"></div>
           <div className="absolute inset-0 bg-gradient-to-t from-[#080808] via-transparent to-[#080808]/60"></div>
         </div>
@@ -105,7 +56,7 @@ export default function MarketingPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center animate-slide-left" style={{ animationDelay: '0.3s' }}>
               <a
-                href="https://wa.me/1234567890"
+                href={WHATSAPP_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-6 sm:px-8 py-3.5 sm:py-4 bg-[#25D366] hover:bg-[#1ebe5d] text-white font-semibold rounded-full transition-all hover:scale-105 hover:shadow-xl hover:shadow-green-500/25 flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer"
@@ -114,7 +65,7 @@ export default function MarketingPage() {
                 Contact on WhatsApp
               </a>
               <a
-                href="mailto:hello@momentumlb.com"
+                href={MAILTO_URL}
                 className="px-6 sm:px-8 py-3.5 sm:py-4 bg-white/5 hover:bg-white/10 text-white font-semibold rounded-full border border-white/15 hover:border-white/30 transition-all hover:scale-105 flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer"
               >
                 <i className="ri-mail-line text-xl"></i>
@@ -277,9 +228,9 @@ export default function MarketingPage() {
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
             {[
-              { name: 'Sarah M.', business: 'Bella Cucina Restaurant', avatar: 'https://readdy.ai/api/search-image?query=professional%20portrait%20of%20middle%20eastern%20woman%20restaurant%20owner%20smiling%20confident%20on%20simple%20light%20background%2C%20high%20quality%2C%20realistic%2C%20no%20text&width=200&height=200&seq=testimonial-sarah&orientation=squarish', quote: 'MomentumLB transformed our Instagram presence. We went from 500 followers to 8,000 in just 4 months, and our reservations increased by 60%!', rating: 5 },
-              { name: 'Dr. Ahmad K.', business: 'Dental Smile Clinic', avatar: 'https://readdy.ai/api/search-image?query=professional%20portrait%20of%20middle%20eastern%20male%20dentist%20doctor%20smiling%20confident%20on%20simple%20light%20background%2C%20high%20quality%2C%20realistic%2C%20no%20text&width=200&height=200&seq=testimonial-ahmad&orientation=squarish', quote: 'Their content creation and ad campaigns brought us 40+ new patients in the first month. The ROI has been incredible. Highly recommend!', rating: 5 },
-              { name: 'Maya R.', business: 'FitZone Gym', avatar: 'https://readdy.ai/api/search-image?query=professional%20portrait%20of%20middle%20eastern%20woman%20fitness%20gym%20owner%20smiling%20confident%20on%20simple%20light%20background%2C%20high%20quality%2C%20realistic%2C%20no%20text&width=200&height=200&seq=testimonial-maya&orientation=squarish', quote: 'Professional, creative, and results-driven. They manage our social media completely and our membership sign-ups have tripled. Best decision we made!', rating: 5 },
+              { name: 'Sarah M.', business: 'Bella Cucina Restaurant', initials: 'SM', quote: 'MomentumLB transformed our Instagram presence. We went from 500 followers to 8,000 in just 4 months, and our reservations increased by 60%!', rating: 5 },
+              { name: 'Dr. Ahmad K.', business: 'Dental Smile Clinic', initials: 'AK', quote: 'Their content creation and ad campaigns brought us 40+ new patients in the first month. The ROI has been incredible. Highly recommend!', rating: 5 },
+              { name: 'Maya R.', business: 'FitZone Gym', initials: 'MR', quote: 'Professional, creative, and results-driven. They manage our social media completely and our membership sign-ups have tripled. Best decision we made!', rating: 5 },
             ].map((testimonial) => (
               <div key={testimonial.name} className="observe-animation group relative p-6 sm:p-8 rounded-2xl border border-white/8 bg-white/[0.02] hover:border-fuchsia-500/40 hover:-translate-y-1 transition-all duration-300 overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-600/0 via-fuchsia-600/0 to-fuchsia-600/5 group-hover:from-fuchsia-600/10 group-hover:via-fuchsia-600/5 group-hover:to-fuchsia-600/10 transition-all duration-500"></div>
@@ -291,8 +242,8 @@ export default function MarketingPage() {
                   </div>
                   <p className="text-white/60 text-sm leading-relaxed mb-5 sm:mb-6 italic">"{testimonial.quote}"</p>
                   <div className="flex items-center gap-3">
-                    <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-full overflow-hidden border-2 border-fuchsia-500/30 flex-shrink-0">
-                      <img src={testimonial.avatar} alt={testimonial.name} className="w-full h-full object-cover" />
+                    <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-full border-2 border-fuchsia-500/30 flex-shrink-0 bg-fuchsia-500/20 flex items-center justify-center">
+                      <span className="text-xs font-bold text-fuchsia-300">{testimonial.initials}</span>
                     </div>
                     <div>
                       <div className="text-sm font-bold text-white">{testimonial.name}</div>
@@ -309,14 +260,6 @@ export default function MarketingPage() {
       {/* Contact CTA Section */}
       <section className="py-16 sm:py-24 lg:py-32 relative overflow-hidden">
         <div className="absolute inset-0 bg-[#0a0a0a]"></div>
-        <div className="absolute inset-0">
-          <img
-            src="https://readdy.ai/api/search-image?query=abstract%20dark%20luxury%20background%20with%20vibrant%20fuchsia%20pink%20purple%20glowing%20gradient%20light%20rays%20on%20black%20background%2C%20cinematic%20moody%20atmosphere%2C%20no%20text%2C%20minimal%2C%20elegant&width=1920&height=800&seq=marketing-cta-bg&orientation=landscape"
-            alt=""
-            className="w-full h-full object-cover object-center opacity-20"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-transparent to-[#0a0a0a]"></div>
-        </div>
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] sm:w-[500px] h-[300px] sm:h-[500px] bg-fuchsia-600/15 rounded-full blur-[100px] pointer-events-none"></div>
 
         <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-16 text-center">
@@ -362,10 +305,9 @@ export default function MarketingPage() {
             <div>
               <h3 className="text-sm font-semibold text-white mb-4 sm:mb-5">Quick Links</h3>
               <ul className="space-y-2.5 sm:space-y-3">
-                {[{ label: 'Home', to: '/' }, { label: 'Projects', to: '/projects' }, { label: 'Marketing', to: '/marketing' }].map((link) => (
+                {[{ label: 'Home', to: '/' }, { label: 'Projects', to: '/projects' }, { label: 'Services', to: '/services' }, { label: 'Marketing', to: '/marketing' }, { label: 'Contact', to: '/contact' }].map((link) => (
                   <li key={link.label}><Link to={link.to} className="text-sm text-white/35 hover:text-white transition-colors">{link.label}</Link></li>
                 ))}
-                <li><a href="/#contact" className="text-sm text-white/35 hover:text-white transition-colors cursor-pointer">Contact</a></li>
               </ul>
             </div>
             <div>

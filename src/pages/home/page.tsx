@@ -3,8 +3,6 @@ import { projects } from '../../mocks/projects';
 import { useEffect, useState } from 'react';
 import {
   motion,
-  useScroll,
-  useTransform,
   useMotionValue,
   useSpring,
 } from 'framer-motion';
@@ -15,7 +13,7 @@ import {
   PHONE_DISPLAY,
   WHATSAPP_URL,
 } from '../../constants/contact';
-import { HeroStatCounters } from '../../components/HeroStatCounters';
+import { HeroPortals } from '../../components/HeroPortals';
 import { useMeta } from '../../hooks/useMeta';
 
 // ─── Shared animation variants ─────────────────────────────────────────────
@@ -98,18 +96,6 @@ export default function HomePage() {
     canonical: 'https://momentumlb.com/',
   });
 
-  const [scrolled, setScrolled] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  const { scrollYProgress, scrollY } = useScroll();
-  const heroBgY = useTransform(scrollY, [0, 700], [0, 140]);
-
-  useEffect(() => {
-    const handler = () => setScrolled(window.scrollY > 50);
-    window.addEventListener('scroll', handler, { passive: true });
-    handler();
-    return () => window.removeEventListener('scroll', handler);
-  }, []);
 
   const industries = [
     { icon: 'ri-windy-line',          label: 'HVAC' },
@@ -178,312 +164,13 @@ export default function HomePage() {
 
       <CursorGlow />
 
-      {/* ── Scroll progress bar ── */}
-      <motion.div
-        aria-hidden
-        className="fixed top-0 left-0 right-0 h-[2px] bg-gradient-to-r
-          from-purple-600 via-fuchsia-500 to-violet-600 z-[100] origin-left"
-        style={{ scaleX: scrollYProgress, transformOrigin: '0% 50%' }}
-      />
-
-      {/* ═══════════════════════════════════════════════════════
-          NAV
-      ═══════════════════════════════════════════════════════ */}
-      <motion.nav
-        initial={{ y: -80, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500
-          ${scrolled
-            ? 'bg-black/75 backdrop-blur-2xl border-b border-white/[0.06] shadow-2xl shadow-black/60'
-            : 'bg-transparent'
-          }`}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-16">
-          <div className="flex items-center justify-between h-16 sm:h-20">
-
-            {/* Logo */}
-            <Link
-              to="/"
-              className="flex items-center gap-2.5 group"
-              onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-              aria-label="Scroll to top"
-            >
-              <div className="relative">
-                <div className="absolute inset-0 bg-purple-500/30 blur-md rounded-xl
-                  opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <img
-                  src="/images/momentumLOGO.jpeg"
-                  alt=""
-                  className="relative w-8 h-8 sm:w-9 sm:h-9 object-contain rounded-xl"
-                />
-              </div>
-              <span className="text-base sm:text-lg font-bold tracking-tight text-white
-                group-hover:text-purple-300 transition-colors">
-                MomentumLB
-              </span>
-            </Link>
-
-            {/* Desktop links */}
-            <div className="hidden md:flex items-center gap-8">
-              {['Projects', 'Services', 'Marketing', 'Contact'].map((item) => (
-                <a
-                  key={item}
-                  href={`#${item.toLowerCase()}`}
-                  className="relative text-sm font-medium text-white/65 hover:text-white
-                    transition-colors duration-200 group"
-                >
-                  {item}
-                  <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-gradient-to-r
-                    from-purple-400 to-fuchsia-400 group-hover:w-full transition-all duration-300" />
-                </a>
-              ))}
-            </div>
-
-            <a
-              href="#contact"
-              className="hidden md:inline-flex items-center gap-2 px-5 py-2.5
-                bg-purple-600 hover:bg-purple-500 text-white text-sm font-semibold
-                rounded-full transition-all duration-200 hover:scale-105
-                hover:shadow-lg hover:shadow-purple-500/30 whitespace-nowrap"
-            >
-              Get Started <i className="ri-arrow-right-line" />
-            </a>
-
-            {/* Hamburger */}
-            <button
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="md:hidden w-10 h-10 flex items-center justify-center
-                text-white/60 hover:text-white transition-colors"
-              aria-label="Toggle menu"
-            >
-              <i className={`text-xl ${menuOpen ? 'ri-close-line' : 'ri-menu-line'}`} />
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile menu */}
-        {menuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="md:hidden bg-black/95 backdrop-blur-2xl border-t border-white/[0.06]
-              px-4 py-4 flex flex-col gap-3"
-          >
-            {['Projects', 'Services', 'Marketing', 'Contact'].map((item) => (
-              <a
-                key={item}
-                href={`#${item.toLowerCase()}`}
-                onClick={() => setMenuOpen(false)}
-                className="text-sm font-medium text-white/60 hover:text-white transition-colors py-2"
-              >
-                {item}
-              </a>
-            ))}
-            <a
-              href="#contact"
-              onClick={() => setMenuOpen(false)}
-              className="mt-2 px-5 py-3 bg-purple-600 text-white text-sm font-semibold
-                rounded-full text-center"
-            >
-              Get Started
-            </a>
-          </motion.div>
-        )}
-      </motion.nav>
 
       {/* ═══════════════════════════════════════════════════════
           HERO
       ═══════════════════════════════════════════════════════ */}
       <section className="relative min-h-[100dvh] flex items-center overflow-hidden">
 
-        {/* Parallax background layer */}
-        <motion.div
-          aria-hidden
-          className="absolute inset-0 pointer-events-none"
-          style={{ y: heroBgY }}
-        >
-          {/* Base */}
-          <div className="absolute inset-0 bg-[#020208]" />
-          {/* Grid overlay */}
-          <div className="absolute inset-0 bg-grid-pattern" />
-          {/* Hero video */}
-          <div className="absolute inset-0">
-            <video
-              src="/images/HeroVideo.mp4"
-              className="w-full h-full object-cover object-center opacity-[0.9]"
-              autoPlay
-              muted
-              loop
-              playsInline
-            />
-          </div>
-          {/* Gradient overlays */}
-          <div className="absolute inset-0 bg-gradient-to-r
-            from-[#020208]/96 via-[#020208]/70 to-[#020208]/25" />
-          <div className="absolute inset-0 bg-gradient-to-t
-            from-[#020208]/95 via-transparent to-[#020208]/55" />
-          {/* Aurora orbs */}
-          <div className="absolute -top-[15%] -left-[8%] w-[500px] sm:w-[750px]
-            h-[500px] sm:h-[750px] rounded-full bg-purple-600/22 blur-[170px] animate-aurora" />
-          <div className="absolute -bottom-[15%] -right-[8%] w-[400px] sm:w-[650px]
-            h-[400px] sm:h-[650px] rounded-full bg-fuchsia-500/12 blur-[150px] animate-aurora-2" />
-          <div className="absolute top-[35%] right-[18%] w-[280px] sm:w-[420px]
-            h-[280px] sm:h-[420px] rounded-full bg-violet-500/14 blur-[130px] animate-aurora-3" />
-          {/* Cyan accent */}
-          <div className="absolute top-[20%] right-[35%] w-[220px] sm:w-[340px]
-            h-[220px] sm:h-[340px] rounded-full bg-cyan-400/14 blur-[110px] animate-aurora-2" />
-        </motion.div>
-
-        {/* Content */}
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-16
-          pt-28 sm:pt-36 pb-20 sm:pb-24 w-full">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-
-            {/* ── Left col ── */}
-            <motion.div
-              className="text-center lg:text-left"
-              variants={stagger}
-              initial="hidden"
-              animate="visible"
-            >
-              {/* Badge */}
-              <motion.div
-                variants={fadeUp}
-                className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full
-                  border border-violet-400/40 bg-violet-500/[0.12] mb-7 sm:mb-9"
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse flex-shrink-0" />
-                <span className="text-[10px] sm:text-xs font-semibold text-violet-200
-                  tracking-[0.2em] uppercase">
-                  Web Development & Marketing · Lebanon
-                </span>
-              </motion.div>
-
-              {/* H1 */}
-              <motion.h1
-                variants={fadeUp}
-                className="font-display text-[2.6rem] sm:text-5xl lg:text-6xl xl:text-[4.25rem]
-                  font-extrabold leading-[1.05] tracking-tight mb-9 sm:mb-11"
-              >
-                Websites &amp; Marketing<br />
-                <span className="gradient-text">That Drive Growth</span><br />
-                <span className="text-white/80">for Local Businesses</span>
-              </motion.h1>
-
-              {/* CTAs */}
-              <motion.div
-                variants={fadeUp}
-                className="flex flex-col sm:flex-row gap-3 sm:gap-4
-                  justify-center lg:justify-start"
-              >
-                <a
-                  href="#what-we-do"
-                  className="group relative overflow-hidden px-7 sm:px-8 py-3.5 sm:py-4
-                    bg-gradient-to-r from-violet-600 to-fuchsia-600
-                    hover:from-violet-500 hover:to-fuchsia-500
-                    text-white font-semibold rounded-full
-                    transition-all duration-200 hover:scale-105 hover:shadow-xl
-                    hover:shadow-violet-500/35 text-sm sm:text-base"
-                >
-                  <span className="relative z-10 flex items-center justify-center gap-2">
-                    Explore Services
-                    <i className="ri-arrow-right-line group-hover:translate-x-1 transition-transform duration-200" />
-                  </span>
-                </a>
-                <a
-                  href="#contact"
-                  className="px-7 sm:px-8 py-3.5 sm:py-4 bg-white/[0.05] hover:bg-white/[0.09]
-                    text-white font-semibold rounded-full border border-white/[0.14]
-                    hover:border-white/25 transition-all duration-200 hover:scale-105
-                    text-sm sm:text-base"
-                >
-                  Contact Us
-                </a>
-              </motion.div>
-
-              {/* Stats */}
-              <motion.div variants={fadeUp}>
-                <HeroStatCounters />
-              </motion.div>
-            </motion.div>
-
-            {/* ── Right col — browser mockup ── */}
-            <motion.div
-              className="relative hidden lg:block"
-              initial={{ opacity: 0, x: 60, scale: 0.95 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              transition={{ duration: 1, delay: 0.45, ease: [0.22, 1, 0.36, 1] }}
-            >
-              <div className="animate-float">
-                {/* Glow halos */}
-                <div className="absolute -inset-14 bg-purple-600/12 rounded-[3rem] blur-3xl" />
-                <div className="absolute -inset-6 bg-purple-500/8 rounded-3xl blur-xl" />
-                {/* Browser frame */}
-                <div className="animate-pulse-glow relative bg-gradient-to-b
-                  from-zinc-800/80 to-zinc-900/80 rounded-2xl p-2.5
-                  shadow-2xl border border-white/[0.09] backdrop-blur-sm">
-                  {/* Chrome bar */}
-                  <div className="bg-zinc-900/90 rounded-t-xl px-4 py-2.5 flex items-center
-                    gap-2 border-b border-white/[0.05]">
-                    <div className="flex gap-1.5">
-                      <div className="w-3 h-3 rounded-full bg-red-500/80" />
-                      <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
-                      <div className="w-3 h-3 rounded-full bg-green-500/80" />
-                    </div>
-                    <div className="flex-1 bg-zinc-800 rounded-md px-3 py-1 text-xs
-                      text-zinc-500 ml-2 flex items-center gap-1.5">
-                      <i className="ri-lock-line text-green-400 text-xs flex-shrink-0" />
-                      <span className="truncate">annascarelb.com</span>
-                    </div>
-                  </div>
-                  {/* Screenshot */}
-                  <div className="overflow-hidden rounded-b-xl">
-                    <img
-                      src={projects.find((p) => p.website)?.website?.screenshot ?? ''}
-                      alt="Website preview"
-                      className="w-full h-auto object-cover object-top"
-                    />
-                  </div>
-
-                  {/* Floating stat chips */}
-                  <div className="absolute -bottom-5 -left-8 bg-zinc-900/95 border border-white/[0.09]
-                    rounded-2xl px-4 py-3 shadow-2xl backdrop-blur-sm flex items-center gap-3">
-                    <div className="w-9 h-9 flex items-center justify-center
-                      bg-green-500/20 rounded-xl flex-shrink-0">
-                      <i className="ri-line-chart-line text-green-400 text-lg" />
-                    </div>
-                    <div>
-                      <div className="text-xs text-white/40">Monthly Visitors</div>
-                      <div className="text-sm font-bold text-white">+340% Growth</div>
-                    </div>
-                  </div>
-                  <div className="absolute -top-5 -right-8 bg-zinc-900/95 border border-white/[0.09]
-                    rounded-2xl px-4 py-3 shadow-2xl backdrop-blur-sm flex items-center gap-3">
-                    <div className="w-9 h-9 flex items-center justify-center
-                      bg-purple-500/20 rounded-xl flex-shrink-0">
-                      <i className="ri-speed-line text-purple-400 text-lg" />
-                    </div>
-                    <div>
-                      <div className="text-xs text-white/40">Page Speed</div>
-                      <div className="text-sm font-bold text-white">98 / 100</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-
-        {/* Scroll hint */}
-        <div
-          className="animate-scroll-hint absolute bottom-8 left-1/2 hidden md:flex
-            flex-col items-center gap-2"
-          aria-hidden
-        >
-          <span className="text-[9px] tracking-[0.2em] uppercase text-white/25">Scroll</span>
-          <div className="w-px h-10 bg-gradient-to-b from-white/35 to-transparent" />
-        </div>
+        <HeroPortals />
       </section>
 
       {/* ═══════════════════════════════════════════════════════

@@ -58,7 +58,6 @@ export default defineConfig({
   ],
   base: "/",
   build: {
-    sourcemap: true,
     outDir: "out",
   },
   resolve: {
@@ -68,6 +67,5 @@ export default defineConfig({
   },
   server: {
     port: 3000,
-    host: "0.0.0.0",
   },
 });

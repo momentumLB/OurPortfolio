@@ -41,8 +41,7 @@ export const projects: Project[] = [
         'Community engagement and DMs'
       ],
       gallery: [
-        '/images/AnnascarelbScreenshot2.jpeg',
-        'https://readdy.ai/api/search-image?query=facebook%20ads%20mockup%20for%20beauty%20clinic%20showing%20targeted%20advertising%2C%20service%20promotions%2C%20special%20offers%2C%20professional%20ad%20creative%20for%20local%20audience&width=1200&height=750&seq=annas-ads&orientation=landscape'
+        '/images/AnnascarelbScreenshot2.jpeg'
       ]
     }
   },
