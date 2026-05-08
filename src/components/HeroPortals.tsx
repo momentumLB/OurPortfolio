@@ -227,13 +227,13 @@ function NetworkCanvas() {
 // ─── Main component ──────────────────────────────────────────────────────────
 
 export function HeroPortals() {
-  const [hovered, setHovered]       = useState<number | null>(null);
+  const [hovered, setHoveredState]  = useState<number | null>(null);
+  const hoveredRef                  = useRef<number | null>(null);
+  const lastPointerType             = useRef<string>('mouse');
   const [portalSize, setPortalSize] = useState(210);
-  // Detect touch-primary devices (no hover) once on mount
-  const [isTouch] = useState(() =>
-    typeof window !== 'undefined' && window.matchMedia('(hover: none) and (pointer: coarse)').matches
-  );
   const rm = useReducedMotion();
+
+  function setHovered(v: number | null) { hoveredRef.current = v; setHoveredState(v); }
 
   useEffect(() => {
     const upd = () =>
@@ -367,8 +367,8 @@ export function HeroPortals() {
                 width:   { duration: rm ? 0 : 0.55, ease: EASE },
                 height:  { duration: rm ? 0 : 0.55, ease: EASE },
               }}
-              onHoverStart={isTouch ? undefined : () => setHovered(i)}
-              onHoverEnd={isTouch ? undefined : () => setHovered(null)}
+              onHoverStart={() => setHovered(i)}
+              onHoverEnd={() => setHovered(null)}
             >
               {/* Ping ring */}
               {!rm && (
@@ -416,18 +416,27 @@ export function HeroPortals() {
               key={portal.id}
               className="flex items-center justify-center"
               // Touch: tap on empty cell area collapses the open portal
-              onClick={() => { if (isTouch) setHovered(null); }}
+              onPointerDown={(e) => {
+                if (e.pointerType !== 'touch') return;
+                e.preventDefault();
+                setHovered(null);
+              }}
             >
               <Link
                 to={portal.to}
                 aria-label={`Go to ${portal.label}`}
                 className="rounded-full outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#020208]"
+                onPointerDown={(e) => {
+                  lastPointerType.current = e.pointerType;
+                  e.stopPropagation();
+                }}
                 onClick={(e) => {
-                  if (!isTouch) return; // desktop: Link navigates normally
-                  e.stopPropagation();  // prevent cell handler from collapsing
-                  if (hovered === i) return; // second tap: let Link navigate
-                  e.preventDefault();        // first tap: expand only
-                  setHovered(i);
+                  if (lastPointerType.current !== 'touch') return;
+                  if (hoveredRef.current !== i) {
+                    e.preventDefault(); // first tap: expand, don't navigate
+                    setHovered(i);
+                  }
+                  // second tap: portal already open → Link navigates normally
                 }}
               >
                 {circle}
@@ -444,7 +453,8 @@ export function HeroPortals() {
         animate={{ opacity: 1 }}
         transition={{ duration: 1.2, delay: 1.7 }}
       >
-        {isTouch ? 'Tap to explore' : 'Hover to explore'}
+        <span className="sm:hidden">Tap to explore</span>
+        <span className="hidden sm:inline">Hover to explore</span>
       </motion.p>
     </div>
   );
